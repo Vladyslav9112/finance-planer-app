@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanStatus {
+  planned
+  done
+  cancelled
+}
+
+enum PlanPriority {
+  low
+  medium
+  high
+}
+
+enum SalaryStatus {
+  awaiting
+  partially_paid
+  paid
+}
+
+enum IncomeType {
+  salary
+  salary_payout
+  freelance
+  gift
+  other
+}
+
+model Plan {
+  id              String       @id @default(uuid())
+  title           String
+  description     String
+  date            DateTime
+  time            String
+  status          PlanStatus   @default(planned)
+  priority        PlanPriority @default(medium)
+  category        String
+  notifyToChannel Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Income {
+  id                   String        @id @default(uuid())
+  amount               Decimal       @db.Decimal(12, 2)
+  source               String
+  comment              String?
+  date                 DateTime
+  incomeType           IncomeType    @default(other)
+  status               String?
+  linkedSalaryPayoutId String?
+  createdAt            DateTime      @default(now())
+  linkedSalaryPayout   SalaryPayout? @relation(fields: [linkedSalaryPayoutId], references: [id])
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  amount    Decimal  @db.Decimal(12, 2)
+  category  String
+  comment   String?
+  date      DateTime
+  createdAt DateTime @default(now())
+}
+
+model SalaryRecord {
+  id                String         @id @default(uuid())
+  source            String
+  totalAmount       Decimal        @db.Decimal(12, 2)
+  alreadyPaid       Decimal        @db.Decimal(12, 2)
+  expectedToReceive Decimal?       @db.Decimal(12, 2)
+  comment           String?
+  date              DateTime
+  status            SalaryStatus   @default(awaiting)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  payouts           SalaryPayout[]
+}
+
+model SalaryPayout {
+  id             String       @id @default(uuid())
+  salaryRecordId String
+  amount         Decimal      @db.Decimal(12, 2)
+  payoutDate     DateTime
+  comment        String?
+  createdAt      DateTime     @default(now())
+  salaryRecord   SalaryRecord @relation(fields: [salaryRecordId], references: [id])
+  generatedIncome Income[]
+}
+
+model EarningsRecord {
+  id         String      @id @default(uuid())
+  date       DateTime
+  totalAmount Decimal    @db.Decimal(12, 2)
+  comment    String?
+  createdAt  DateTime    @default(now())
+  entries    TaraEntry[]
+}
+
+model TaraEntry {
+  id               String         @id @default(uuid())
+  earningsRecordId String
+  rate             Int
+  quantity         Int
+  sum              Decimal        @db.Decimal(12, 2)
+  earningsRecord   EarningsRecord @relation(fields: [earningsRecordId], references: [id])
+}
+
