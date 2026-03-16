@@ -1,6 +1,6 @@
-import { prisma } from "../_lib/prisma";
-import { allowMethods, json, parseBody, toNumber } from "../_lib/http";
-import { serializeEarnings } from "../_lib/serializers";
+﻿import { prisma } from "../_lib/prisma.js";
+import { allowMethods, json, parseBody, toNumber } from "../_lib/http.js";
+import { serializeEarnings } from "../_lib/serializers.js";
 
 export default async function handler(req: any, res: any) {
   if (!allowMethods(req, res, ["GET", "POST"])) return;
@@ -40,3 +40,4 @@ export default async function handler(req: any, res: any) {
     return json(res, 500, { error: "Failed to process earnings request", details: String(error) });
   }
 }
+

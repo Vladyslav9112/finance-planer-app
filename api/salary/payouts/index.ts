@@ -1,6 +1,6 @@
-import { prisma } from "../../_lib/prisma";
-import { allowMethods, json, parseBody, toNumber } from "../../_lib/http";
-import { serializeSalaryPayout } from "../../_lib/serializers";
+﻿import { prisma } from "../../_lib/prisma.js";
+import { allowMethods, json, parseBody, toNumber } from "../../_lib/http.js";
+import { serializeSalaryPayout } from "../../_lib/serializers.js";
 
 function resolveStatus(totalAmount: number, alreadyPaid: number, owed: number) {
   if (alreadyPaid <= 0) return "awaiting";
@@ -51,8 +51,8 @@ export default async function handler(req: any, res: any) {
       await tx.income.create({
         data: {
           amount,
-          source: `Виплата ЗП: ${record.source} (${salaryRecordId.slice(0, 6)})`,
-          comment: body.comment || "Автоматично додано після видачі зарплати",
+          source: `Р’РёРїР»Р°С‚Р° Р—Рџ: ${record.source} (${salaryRecordId.slice(0, 6)})`,
+          comment: body.comment || "РђРІС‚РѕРјР°С‚РёС‡РЅРѕ РґРѕРґР°РЅРѕ РїС–СЃР»СЏ РІРёРґР°С‡С– Р·Р°СЂРїР»Р°С‚Рё",
           date: payoutDate,
           incomeType: "salary_payout",
           status: "received",
@@ -68,3 +68,4 @@ export default async function handler(req: any, res: any) {
     return json(res, 500, { error: "Failed to process salary payout", details: String(error) });
   }
 }
+

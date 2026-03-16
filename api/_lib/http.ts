@@ -1,4 +1,4 @@
-export function json(res: any, status: number, payload: unknown) {
+﻿export function json(res: any, status: number, payload: unknown) {
   res.status(status).json(payload);
 }
 
@@ -19,4 +19,5 @@ export function parseBody<T>(req: any): T {
 export function toNumber(value: unknown) {
   return Number(value || 0);
 }
+
 

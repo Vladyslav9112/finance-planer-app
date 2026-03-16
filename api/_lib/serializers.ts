@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   EarningsRecord,
   Expense,
   Income,
@@ -90,4 +90,5 @@ export function serializeEarnings(item: any): EarningsRecord {
     createdAt: item.createdAt.toISOString(),
   };
 }
+
 

@@ -1,4 +1,4 @@
-import { allowMethods, json, parseBody } from "../_lib/http";
+﻿import { allowMethods, json, parseBody } from "../_lib/http.js";
 
 export default async function handler(req: any, res: any) {
   if (!allowMethods(req, res, ["POST"])) return;
@@ -14,13 +14,13 @@ export default async function handler(req: any, res: any) {
     const body = parseBody<any>(req);
     const plan = body.plan;
     const text = [
-      "Новий план",
-      `Назва: ${plan.title}`,
-      `Опис: ${plan.description}`,
-      `Дата: ${plan.date} ${plan.time}`,
-      `Статус: ${plan.status}`,
-      `Пріоритет: ${plan.priority}`,
-      `Категорія: ${plan.category}`,
+      "РќРѕРІРёР№ РїР»Р°РЅ",
+      `РќР°Р·РІР°: ${plan.title}`,
+      `РћРїРёСЃ: ${plan.description}`,
+      `Р”Р°С‚Р°: ${plan.date} ${plan.time}`,
+      `РЎС‚Р°С‚СѓСЃ: ${plan.status}`,
+      `РџСЂС–РѕСЂРёС‚РµС‚: ${plan.priority}`,
+      `РљР°С‚РµРіРѕСЂС–СЏ: ${plan.category}`,
     ].join("\n");
 
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -42,4 +42,5 @@ export default async function handler(req: any, res: any) {
     return json(res, 500, { success: false, message: "Failed", details: String(error) });
   }
 }
+
 

@@ -1,6 +1,6 @@
-import { prisma } from "../../_lib/prisma";
-import { allowMethods, json, parseBody, toNumber } from "../../_lib/http";
-import { serializeSalaryRecord } from "../../_lib/serializers";
+﻿import { prisma } from "../../_lib/prisma.js";
+import { allowMethods, json, parseBody, toNumber } from "../../_lib/http.js";
+import { serializeSalaryRecord } from "../../_lib/serializers.js";
 
 function resolveStatus(totalAmount: number, alreadyPaid: number, owed: number) {
   if (alreadyPaid <= 0) return "awaiting";
@@ -44,3 +44,4 @@ export default async function handler(req: any, res: any) {
     return json(res, 500, { error: "Failed to process salary records request", details: String(error) });
   }
 }
+
