@@ -34,10 +34,7 @@ export const sendPlanToChannel = async (plan: Plan) => {
   const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      plan,
-      channelId: appEnv.telegramChannelId,
-    }),
+    body: JSON.stringify({ plan }),
   });
 
   if (!res.ok) {

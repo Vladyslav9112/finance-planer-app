@@ -4,13 +4,16 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "vite",
+    "vercel-build": "prisma db push && npm run build",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "server:dev": "tsx watch server/src/index.ts",
     "server:start": "tsx server/src/index.ts",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

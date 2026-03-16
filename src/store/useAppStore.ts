@@ -10,6 +10,10 @@ import {
 } from "../data/mockData";
 import { sendPlanToChannel } from "../lib/telegram";
 import { today, uid } from "../lib/utils";
+import { earningsService } from "../services/earningsService";
+import { financeService } from "../services/financeService";
+import { plansService } from "../services/plansService";
+import { salaryService } from "../services/salaryService";
 import type {
   EarningsRecord,
   Expense,
@@ -29,6 +33,7 @@ type AppState = {
   salaryRecords: SalaryRecord[];
   salaryPayouts: SalaryPayout[];
   earningsRecords: EarningsRecord[];
+  hydrateFromApi: () => Promise<void>;
   addPlan: (payload: Omit<Plan, "id" | "createdAt" | "updatedAt">) => void;
   updatePlan: (id: string, payload: Partial<Plan>) => void;
   deletePlan: (id: string) => void;
@@ -43,6 +48,12 @@ type AppState = {
   addSalaryPayout: (payload: SalaryPayoutInput) => void;
   addEarningsRecord: (payload: { date: string; comment?: string; entries: TaraEntry[] }) => void;
   getStatsSummary: () => StatsSummary;
+};
+
+const safeSync = <T>(fn: () => Promise<T>) => {
+  void fn().catch(() => {
+    // Non-blocking API sync: local UX stays responsive even if network fails.
+  });
 };
 
 const resolveSalaryStatus = (totalAmount: number, alreadyPaid: number, owed: number) => {
@@ -69,22 +80,46 @@ export const useAppStore = create<AppState>()(
       salaryPayouts: mockSalaryPayouts,
       earningsRecords: mockEarnings,
 
+      hydrateFromApi: async () => {
+        try {
+          const [plans, incomes, expenses, salaryRecords, earningsRecords] = await Promise.all([
+            plansService.list(),
+            financeService.incomes.list(),
+            financeService.expenses.list(),
+            salaryService.records.list(),
+            earningsService.list(),
+          ]);
+
+          set((state) => ({
+            plans: plans.length ? plans : state.plans,
+            incomes: incomes.length ? incomes : state.incomes,
+            expenses: expenses.length ? expenses : state.expenses,
+            salaryRecords: salaryRecords.length ? salaryRecords : state.salaryRecords,
+            earningsRecords: earningsRecords.length ? earningsRecords : state.earningsRecords,
+          }));
+        } catch {
+          // If API is unavailable, app continues with local persisted data.
+        }
+      },
+
       addPlan: (payload) => {
         const ts = new Date().toISOString();
         const plan: Plan = { id: uid(), createdAt: ts, updatedAt: ts, ...payload };
         set((state) => ({ plans: [plan, ...state.plans] }));
+        safeSync(() => plansService.create(plan));
       },
 
       updatePlan: (id, payload) => {
+        const nextPayload = { ...payload, updatedAt: new Date().toISOString() };
         set((state) => ({
-          plans: state.plans.map((plan) =>
-            plan.id === id ? { ...plan, ...payload, updatedAt: new Date().toISOString() } : plan,
-          ),
+          plans: state.plans.map((plan) => (plan.id === id ? { ...plan, ...nextPayload } : plan)),
         }));
+        safeSync(() => plansService.update(id, nextPayload));
       },
 
       deletePlan: (id) => {
         set((state) => ({ plans: state.plans.filter((plan) => plan.id !== id) }));
+        safeSync(() => plansService.remove(id));
       },
 
       markPlanDone: (id) => {
@@ -98,23 +133,25 @@ export const useAppStore = create<AppState>()(
       },
 
       addIncome: (payload) => {
-        set((state) => ({
-          incomes: [{ ...payload, id: uid(), createdAt: new Date().toISOString() }, ...state.incomes],
-        }));
+        const created: Income = { ...payload, id: uid(), createdAt: new Date().toISOString() };
+        set((state) => ({ incomes: [created, ...state.incomes] }));
+        safeSync(() => financeService.incomes.create(created));
       },
 
       addExpense: (payload) => {
-        set((state) => ({
-          expenses: [{ ...payload, id: uid(), createdAt: new Date().toISOString() }, ...state.expenses],
-        }));
+        const created: Expense = { ...payload, id: uid(), createdAt: new Date().toISOString() };
+        set((state) => ({ expenses: [created, ...state.expenses] }));
+        safeSync(() => financeService.expenses.create(created));
       },
 
       deleteIncome: (id) => {
         set((state) => ({ incomes: state.incomes.filter((item) => item.id !== id) }));
+        safeSync(() => financeService.incomes.remove(id));
       },
 
       deleteExpense: (id) => {
         set((state) => ({ expenses: state.expenses.filter((item) => item.id !== id) }));
+        safeSync(() => financeService.expenses.remove(id));
       },
 
       addSalaryRecord: (payload) => {
@@ -133,6 +170,7 @@ export const useAppStore = create<AppState>()(
         };
 
         set((state) => ({ salaryRecords: [record, ...state.salaryRecords] }));
+        safeSync(() => salaryService.records.create(record));
       },
 
       updateSalaryRecord: (id, payload) => {
@@ -163,18 +201,17 @@ export const useAppStore = create<AppState>()(
         const payoutId = uid();
         const sourceTag = `Виплата ЗП: ${record.source} (${salaryRecordId.slice(0, 6)})`;
 
+        const payout: SalaryPayout = {
+          id: payoutId,
+          salaryRecordId,
+          amount,
+          payoutDate,
+          comment,
+          createdAt: new Date().toISOString(),
+        };
+
         set((state) => ({
-          salaryPayouts: [
-            {
-              id: payoutId,
-              salaryRecordId,
-              amount,
-              payoutDate,
-              comment,
-              createdAt: new Date().toISOString(),
-            },
-            ...state.salaryPayouts,
-          ],
+          salaryPayouts: [payout, ...state.salaryPayouts],
           salaryRecords: state.salaryRecords.map((salary) =>
             salary.id === salaryRecordId
               ? {
@@ -201,6 +238,8 @@ export const useAppStore = create<AppState>()(
             ...state.incomes,
           ],
         }));
+
+        safeSync(() => salaryService.payouts.create(payout));
       },
 
       addEarningsRecord: ({ date, comment, entries }) => {
@@ -215,6 +254,7 @@ export const useAppStore = create<AppState>()(
         };
 
         set((state) => ({ earningsRecords: [record, ...state.earningsRecords] }));
+        safeSync(() => earningsService.create(record));
       },
 
       getStatsSummary: () => {

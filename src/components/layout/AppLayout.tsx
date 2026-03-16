@@ -1,8 +1,16 @@
+import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
 import { appEnv } from "../../lib/env";
+import { useAppStore } from "../../store/useAppStore";
 
 export function AppLayout() {
+  const hydrateFromApi = useAppStore((s) => s.hydrateFromApi);
+
+  useEffect(() => {
+    void hydrateFromApi();
+  }, [hydrateFromApi]);
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,#141b28_0,#090b10_48%,#07080c_100%)] text-slate-100">
       <div className="mx-auto max-w-lg px-4 pb-24 pt-5">

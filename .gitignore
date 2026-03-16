@@ -28,5 +28,6 @@ prisma/migrations/
 # IDE / OS
 .vscode/
 .idea/
+.vercel/
 .DS_Store
 Thumbs.db
