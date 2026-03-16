@@ -7,7 +7,8 @@ import { formatMoney } from "../../lib/utils";
 import { useAppStore } from "../../store/useAppStore";
 
 export function StatsPage() {
-  const stats = useAppStore((s) => s.getStatsSummary());
+  const getStatsSummary = useAppStore((s) => s.getStatsSummary);
+  const stats = getStatsSummary();
 
   return (
     <div className="space-y-4">

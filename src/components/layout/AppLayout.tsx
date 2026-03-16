@@ -5,11 +5,9 @@ import { appEnv } from "../../lib/env";
 import { useAppStore } from "../../store/useAppStore";
 
 export function AppLayout() {
-  const hydrateFromApi = useAppStore((s) => s.hydrateFromApi);
-
   useEffect(() => {
-    void hydrateFromApi();
-  }, [hydrateFromApi]);
+    void useAppStore.getState().hydrateFromApi();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,#141b28_0,#090b10_48%,#07080c_100%)] text-slate-100">

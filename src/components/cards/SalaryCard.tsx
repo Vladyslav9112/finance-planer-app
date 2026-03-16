@@ -22,20 +22,29 @@ export function SalaryCard({ record, owed, onPayout }: SalaryCardProps) {
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <div className="rounded-xl bg-white/5 p-2">
           <p className="text-slate-400">Всього</p>
-          <p className="font-medium text-white">{formatMoney(record.totalAmount)}</p>
+          <p className="font-medium text-white">
+            {formatMoney(record.totalAmount)}
+          </p>
         </div>
         <div className="rounded-xl bg-white/5 p-2">
           <p className="text-slate-400">Виплачено</p>
-          <p className="font-medium text-emerald-300">{formatMoney(record.alreadyPaid)}</p>
+          <p className="font-medium text-emerald-300">
+            {formatMoney(record.alreadyPaid)}
+          </p>
         </div>
         <div className="rounded-xl bg-white/5 p-2">
           <p className="text-slate-400">Ще мають дати</p>
           <p className="font-medium text-amber-300">{formatMoney(owed)}</p>
         </div>
       </div>
-      {record.comment ? <p className="mt-2 text-sm text-slate-400">{record.comment}</p> : null}
-      <button onClick={() => onPayout(record.id)} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-accentAlt/20 px-3 py-2 text-xs text-accentAlt hover:bg-accentAlt/30">
-        <HandCoins className="h-4 w-4" /> Видати ЗП
+      {record.comment ? (
+        <p className="mt-2 text-sm text-slate-400">{record.comment}</p>
+      ) : null}
+      <button
+        onClick={() => onPayout(record.id)}
+        className="mt-3 inline-flex items-center gap-2 rounded-xl bg-accentAlt/20 px-3 py-2 text-xs text-accentAlt hover:bg-accentAlt/30"
+      >
+        <HandCoins className="h-4 w-4" /> Видали ЗП
       </button>
       <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-500">
         <CircleDollarSign className="h-3.5 w-3.5" />
@@ -44,4 +53,3 @@ export function SalaryCard({ record, owed, onPayout }: SalaryCardProps) {
     </article>
   );
 }
-

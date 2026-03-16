@@ -1,13 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import {
-  mockEarnings,
-  mockExpenses,
-  mockIncomes,
-  mockPlans,
-  mockSalaryPayouts,
-  mockSalaryRecords,
-} from "../data/mockData";
 import { sendPlanToChannel } from "../lib/telegram";
 import { today, uid } from "../lib/utils";
 import { earningsService } from "../services/earningsService";
@@ -73,12 +65,12 @@ const computeOwed = (record: SalaryRecord) => {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
-      plans: mockPlans,
-      incomes: mockIncomes,
-      expenses: mockExpenses,
-      salaryRecords: mockSalaryRecords,
-      salaryPayouts: mockSalaryPayouts,
-      earningsRecords: mockEarnings,
+      plans: [],
+      incomes: [],
+      expenses: [],
+      salaryRecords: [],
+      salaryPayouts: [],
+      earningsRecords: [],
 
       hydrateFromApi: async () => {
         try {
@@ -90,12 +82,12 @@ export const useAppStore = create<AppState>()(
             earningsService.list(),
           ]);
 
-          set((state) => ({
-            plans: plans.length ? plans : state.plans,
-            incomes: incomes.length ? incomes : state.incomes,
-            expenses: expenses.length ? expenses : state.expenses,
-            salaryRecords: salaryRecords.length ? salaryRecords : state.salaryRecords,
-            earningsRecords: earningsRecords.length ? earningsRecords : state.earningsRecords,
+          set(() => ({
+            plans,
+            incomes,
+            expenses,
+            salaryRecords,
+            earningsRecords,
           }));
         } catch {
           // If API is unavailable, app continues with local persisted data.
@@ -281,7 +273,7 @@ export const useAppStore = create<AppState>()(
       },
     }),
     {
-      name: "my-finance-mini-app-store",
+      name: "my-finance-mini-app-store-v2",
       partialize: (state) => ({
         plans: state.plans,
         incomes: state.incomes,
@@ -299,4 +291,3 @@ export const useTodayPlans = () => {
   const date = today();
   return plans.filter((plan) => plan.date === date);
 };
-

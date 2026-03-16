@@ -31,7 +31,6 @@ export function SalaryPage() {
   const addSalaryRecord = useAppStore((s) => s.addSalaryRecord);
   const addSalaryPayout = useAppStore((s) => s.addSalaryPayout);
   const addEarningsRecord = useAppStore((s) => s.addEarningsRecord);
-  const stats = useAppStore((s) => s.getStatsSummary());
 
   useEffect(() => {
     if (searchParams.get("action") === "payout") {

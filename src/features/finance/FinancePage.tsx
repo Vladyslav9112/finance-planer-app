@@ -23,7 +23,8 @@ export function FinancePage() {
   const addExpense = useAppStore((s) => s.addExpense);
   const deleteIncome = useAppStore((s) => s.deleteIncome);
   const deleteExpense = useAppStore((s) => s.deleteExpense);
-  const stats = useAppStore((s) => s.getStatsSummary());
+  const getStatsSummary = useAppStore((s) => s.getStatsSummary);
+  const stats = getStatsSummary();
 
   useEffect(() => {
     const action = searchParams.get("action");
