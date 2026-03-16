@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "../components/layout/AppLayout";
 import { HomePage } from "../features/home/HomePage";
 import { PlannerPage } from "../features/planner/PlannerPage";
@@ -11,10 +11,12 @@ export function App() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/index.html" element={<HomePage />} />
         <Route path="/planner" element={<PlannerPage />} />
         <Route path="/finance" element={<FinancePage />} />
         <Route path="/salary" element={<SalaryPage />} />
         <Route path="/stats" element={<StatsPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );
