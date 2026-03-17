@@ -6,7 +6,7 @@ export default async function handler(req: any, res: any) {
   const id = req.query.id as string;
 
   try {
-    await prisma.income.delete({ where: { id } });
+    await prisma.income.deleteMany({ where: { id } });
     return json(res, 200, { success: true });
   } catch (error) {
     return json(res, 500, { error: "Failed to delete income", details: String(error) });

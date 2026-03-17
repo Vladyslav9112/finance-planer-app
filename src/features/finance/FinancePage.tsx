@@ -46,6 +46,24 @@ export function FinancePage() {
     [expenses, query],
   );
 
+  const handleDeleteIncome = async (id: string) => {
+    try {
+      await deleteIncome(id);
+      toast.success("Дохід видалено");
+    } catch {
+      toast.error("Не вдалося видалити дохід з бази");
+    }
+  };
+
+  const handleDeleteExpense = async (id: string) => {
+    try {
+      await deleteExpense(id);
+      toast.success("Витрату видалено");
+    } catch {
+      toast.error("Не вдалося видалити витрату з бази");
+    }
+  };
+
   return (
     <div className="space-y-4">
       <SectionHeader
@@ -73,7 +91,7 @@ export function FinancePage() {
         {filteredIncomes.length === 0 ? (
           <EmptyState title="Доходи відсутні" description="Додайте перший дохід" />
         ) : (
-          filteredIncomes.map((income) => <FinanceCard key={income.id} entry={income} type="income" onDelete={deleteIncome} />)
+          filteredIncomes.map((income) => <FinanceCard key={income.id} entry={income} type="income" onDelete={handleDeleteIncome} />)
         )}
       </section>
 
@@ -82,7 +100,7 @@ export function FinancePage() {
         {filteredExpenses.length === 0 ? (
           <EmptyState title="Витрати відсутні" description="Зафіксуйте першу витрату" />
         ) : (
-          filteredExpenses.map((expense) => <FinanceCard key={expense.id} entry={expense} type="expense" onDelete={deleteExpense} />)
+          filteredExpenses.map((expense) => <FinanceCard key={expense.id} entry={expense} type="expense" onDelete={handleDeleteExpense} />)
         )}
       </section>
 
@@ -108,4 +126,3 @@ export function FinancePage() {
     </div>
   );
 }
-

@@ -6,7 +6,7 @@ export default async function handler(req: any, res: any) {
   const id = req.query.id as string;
 
   try {
-    await prisma.expense.delete({ where: { id } });
+    await prisma.expense.deleteMany({ where: { id } });
     return json(res, 200, { success: true });
   } catch (error) {
     return json(res, 500, { error: "Failed to delete expense", details: String(error) });

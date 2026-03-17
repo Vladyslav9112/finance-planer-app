@@ -99,7 +99,7 @@ export type AppTab = "home" | "planner" | "finance" | "salary" | "stats";
 export interface SalaryPayoutInput {
   salaryRecordId: ID;
   amount: number;
-  payoutDate: string;
+  payoutDate?: string;
   comment?: string;
 }
 

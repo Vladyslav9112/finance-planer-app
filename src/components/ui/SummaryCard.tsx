@@ -15,7 +15,13 @@ const accentStyles = {
   violet: "from-accent/20 to-transparent border-accent/30",
 };
 
-export function SummaryCard({ title, value, icon, hint, accent = "violet" }: SummaryCardProps) {
+export function SummaryCard({
+  title,
+  value,
+  icon,
+  hint,
+  accent = "violet",
+}: SummaryCardProps) {
   return (
     <div
       className={cn(
@@ -32,4 +38,3 @@ export function SummaryCard({ title, value, icon, hint, accent = "violet" }: Sum
     </div>
   );
 }
-

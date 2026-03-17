@@ -1,8 +1,16 @@
-import type { EarningsRecord, Expense, Income, Plan, SalaryPayout, SalaryRecord, TaraRate } from "../types/entities";
+import type {
+  EarningsRecord,
+  Expense,
+  Income,
+  Plan,
+  SalaryPayout,
+  SalaryRecord,
+  TaraRate,
+} from "../types/entities";
 
 const now = new Date().toISOString();
 
-export const taraRates: TaraRate[] = [4, 3, 5, 6, 2, 7];
+export const taraRates: TaraRate[] = [2, 3, 4, 5, 6, 7];
 
 export const mockPlans: Plan[] = [
   {
@@ -66,11 +74,11 @@ export const mockEarnings: EarningsRecord[] = [
     id: "earning-1",
     date: new Date().toISOString().slice(0, 10),
     entries: [
-      { rate: 4, quantity: 10, sum: 40 },
+      { rate: 2, quantity: 10, sum: 40 },
       { rate: 3, quantity: 8, sum: 24 },
-      { rate: 5, quantity: 6, sum: 30 },
-      { rate: 6, quantity: 0, sum: 0 },
-      { rate: 2, quantity: 3, sum: 6 },
+      { rate: 4, quantity: 6, sum: 24 },
+      { rate: 5, quantity: 0, sum: 0 },
+      { rate: 6, quantity: 3, sum: 18 },
       { rate: 7, quantity: 0, sum: 0 },
     ],
     totalAmount: 100,
@@ -78,4 +86,3 @@ export const mockEarnings: EarningsRecord[] = [
     createdAt: now,
   },
 ];
-

@@ -18,6 +18,8 @@ import type {
   TaraEntry,
 } from "../types/entities";
 
+type EarningsPayload = { date: string; comment?: string; entries: TaraEntry[] };
+
 type AppState = {
   plans: Plan[];
   incomes: Income[];
@@ -33,12 +35,14 @@ type AppState = {
   sendPlan: (id: string) => Promise<void>;
   addIncome: (payload: Omit<Income, "id" | "createdAt">) => void;
   addExpense: (payload: Omit<Expense, "id" | "createdAt">) => void;
-  deleteIncome: (id: string) => void;
-  deleteExpense: (id: string) => void;
+  deleteIncome: (id: string) => Promise<void>;
+  deleteExpense: (id: string) => Promise<void>;
   addSalaryRecord: (payload: Omit<SalaryRecord, "id" | "createdAt" | "updatedAt" | "status">) => void;
   updateSalaryRecord: (id: string, payload: Partial<SalaryRecord>) => void;
   addSalaryPayout: (payload: SalaryPayoutInput) => void;
-  addEarningsRecord: (payload: { date: string; comment?: string; entries: TaraEntry[] }) => void;
+  addEarningsRecord: (payload: EarningsPayload) => void;
+  updateEarningsRecord: (id: string, payload: EarningsPayload) => Promise<void>;
+  deleteEarningsRecord: (id: string) => Promise<void>;
   getStatsSummary: () => StatsSummary;
 };
 
@@ -60,6 +64,42 @@ const computeOwed = (record: SalaryRecord) => {
     return Math.max(record.expectedToReceive, 0);
   }
   return auto;
+};
+
+const earningsMarker = (earningsId: string) => `[earnings:${earningsId}]`;
+
+const toSalaryComment = (earningsId: string, comment?: string) =>
+  [earningsMarker(earningsId), comment?.trim()].filter(Boolean).join(" ");
+
+const stripEarningsMarker = (comment?: string) =>
+  comment?.replace(/^\[earnings:[^\]]+\]\s*/, "").trim() || undefined;
+
+const findSalaryRecordForEarnings = (salaryRecords: SalaryRecord[], earningsId: string) =>
+  salaryRecords.find((record) => record.comment?.includes(earningsMarker(earningsId)));
+
+const buildSalaryRecordFromEarnings = (
+  earningsId: string,
+  payload: EarningsPayload,
+  previous?: SalaryRecord,
+): SalaryRecord => {
+  const totalAmount = payload.entries.reduce((acc, item) => acc + item.sum, 0);
+  const alreadyPaid = previous?.alreadyPaid ?? 0;
+  const nextOwed = Math.max(totalAmount - alreadyPaid, 0);
+  const createdAt = previous?.createdAt ?? new Date().toISOString();
+  const updatedAt = new Date().toISOString();
+
+  return {
+    id: previous?.id ?? uid(),
+    source: `Склад / тара ${payload.date}`,
+    totalAmount,
+    alreadyPaid,
+    expectedToReceive: nextOwed,
+    comment: toSalaryComment(earningsId, payload.comment),
+    date: payload.date,
+    status: resolveSalaryStatus(totalAmount, alreadyPaid, nextOwed),
+    createdAt,
+    updatedAt,
+  };
 };
 
 export const useAppStore = create<AppState>()(
@@ -136,14 +176,14 @@ export const useAppStore = create<AppState>()(
         safeSync(() => financeService.expenses.create(created));
       },
 
-      deleteIncome: (id) => {
+      deleteIncome: async (id) => {
+        await financeService.incomes.remove(id);
         set((state) => ({ incomes: state.incomes.filter((item) => item.id !== id) }));
-        safeSync(() => financeService.incomes.remove(id));
       },
 
-      deleteExpense: (id) => {
+      deleteExpense: async (id) => {
+        await financeService.expenses.remove(id);
         set((state) => ({ expenses: state.expenses.filter((item) => item.id !== id) }));
-        safeSync(() => financeService.expenses.remove(id));
       },
 
       addSalaryRecord: (payload) => {
@@ -183,6 +223,7 @@ export const useAppStore = create<AppState>()(
         const record = get().salaryRecords.find((item) => item.id === salaryRecordId);
         if (!record) throw new Error("Запис зарплати не знайдено");
 
+        const effectivePayoutDate = payoutDate || new Date().toISOString().slice(0, 10);
         const nextPaid = record.alreadyPaid + amount;
         const autoOwed = Math.max(record.totalAmount - nextPaid, 0);
         const manualOwed =
@@ -190,14 +231,11 @@ export const useAppStore = create<AppState>()(
             ? Math.max(record.expectedToReceive - amount, 0)
             : null;
         const effectiveOwed = manualOwed ?? autoOwed;
-        const payoutId = uid();
-        const sourceTag = `Виплата ЗП: ${record.source} (${salaryRecordId.slice(0, 6)})`;
-
         const payout: SalaryPayout = {
-          id: payoutId,
+          id: uid(),
           salaryRecordId,
           amount,
-          payoutDate,
+          payoutDate: effectivePayoutDate,
           comment,
           createdAt: new Date().toISOString(),
         };
@@ -215,38 +253,65 @@ export const useAppStore = create<AppState>()(
                 }
               : salary,
           ),
-          incomes: [
-            {
-              id: uid(),
-              amount,
-              source: sourceTag,
-              comment: comment || "Автоматично додано після видачі зарплати",
-              date: payoutDate,
-              incomeType: "salary_payout",
-              status: "received",
-              linkedSalaryPayoutId: payoutId,
-              createdAt: new Date().toISOString(),
-            },
-            ...state.incomes,
-          ],
         }));
 
         safeSync(() => salaryService.payouts.create(payout));
       },
 
-      addEarningsRecord: ({ date, comment, entries }) => {
-        const totalAmount = entries.reduce((acc, item) => acc + item.sum, 0);
+      addEarningsRecord: (payload) => {
+        const now = new Date().toISOString();
+        const totalAmount = payload.entries.reduce((acc, item) => acc + item.sum, 0);
+        const earningsId = uid();
         const record: EarningsRecord = {
-          id: uid(),
-          date,
-          comment,
-          entries,
+          id: earningsId,
+          date: payload.date,
+          comment: payload.comment,
+          entries: payload.entries,
           totalAmount,
-          createdAt: new Date().toISOString(),
+          createdAt: now,
         };
 
-        set((state) => ({ earningsRecords: [record, ...state.earningsRecords] }));
+        const salaryRecord = buildSalaryRecordFromEarnings(earningsId, payload);
+
+        set((state) => ({
+          earningsRecords: [record, ...state.earningsRecords],
+          salaryRecords: [salaryRecord, ...state.salaryRecords],
+        }));
         safeSync(() => earningsService.create(record));
+      },
+
+      updateEarningsRecord: async (id, payload) => {
+        await earningsService.update(id, payload);
+
+        set((state) => {
+          const currentSalaryRecord = findSalaryRecordForEarnings(state.salaryRecords, id);
+          const nextSalaryRecord = buildSalaryRecordFromEarnings(id, payload, currentSalaryRecord);
+
+          return {
+            earningsRecords: state.earningsRecords.map((record) =>
+              record.id === id
+                ? {
+                    ...record,
+                    date: payload.date,
+                    comment: payload.comment,
+                    entries: payload.entries,
+                    totalAmount: payload.entries.reduce((acc, item) => acc + item.sum, 0),
+                  }
+                : record,
+            ),
+            salaryRecords: currentSalaryRecord
+              ? state.salaryRecords.map((record) => (record.id === currentSalaryRecord.id ? nextSalaryRecord : record))
+              : [nextSalaryRecord, ...state.salaryRecords],
+          };
+        });
+      },
+
+      deleteEarningsRecord: async (id) => {
+        await earningsService.remove(id);
+        set((state) => ({
+          earningsRecords: state.earningsRecords.filter((record) => record.id !== id),
+          salaryRecords: state.salaryRecords.filter((record) => !record.comment?.includes(earningsMarker(id))),
+        }));
       },
 
       getStatsSummary: () => {
@@ -291,3 +356,5 @@ export const useTodayPlans = () => {
   const date = today();
   return plans.filter((plan) => plan.date === date);
 };
+
+export { stripEarningsMarker };

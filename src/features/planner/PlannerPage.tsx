@@ -97,8 +97,8 @@ export function PlannerPage() {
                 try {
                   await sendPlan(id);
                   toast.success("План надіслано в канал");
-                } catch {
-                  toast.error("Немає підключення до API Telegram");
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Не вдалося надіслати план у Telegram");
                 }
               }}
             />
@@ -119,4 +119,3 @@ export function PlannerPage() {
     </div>
   );
 }
-

@@ -5,7 +5,7 @@ import { formatMoney } from "../../lib/utils";
 interface FinanceCardProps {
   entry: Income | Expense;
   type: "income" | "expense";
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
 }
 
 export function FinanceCard({ entry, type, onDelete }: FinanceCardProps) {

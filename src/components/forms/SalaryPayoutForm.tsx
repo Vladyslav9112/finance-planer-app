@@ -21,12 +21,11 @@ export function SalaryPayoutForm({ salaryRecordId, onSubmit }: SalaryPayoutFormP
   return (
     <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
       <input type="hidden" {...register("salaryRecordId")} value={salaryRecordId} />
+      <input type="hidden" {...register("payoutDate")} value={new Date().toISOString().slice(0, 10)} />
+      <input type="hidden" {...register("comment")} value="" />
       <input type="number" {...register("amount")} placeholder="Сума виплати" className="w-full rounded-xl border border-border bg-[#090d14] px-3 py-2 text-sm" />
       {errors.amount && <p className="text-xs text-rose-300">{errors.amount.message}</p>}
-      <input type="date" {...register("payoutDate")} className="w-full rounded-xl border border-border bg-[#090d14] px-3 py-2 text-sm" />
-      <textarea {...register("comment")} placeholder="Коментар" rows={2} className="w-full rounded-xl border border-border bg-[#090d14] px-3 py-2 text-sm" />
       <button className="w-full rounded-xl bg-lime/20 px-4 py-2 text-sm font-medium text-lime hover:bg-lime/30">Підтвердити виплату</button>
     </form>
   );
 }
-

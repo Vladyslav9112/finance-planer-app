@@ -37,10 +37,20 @@ export const sendPlanToChannel = async (plan: Plan) => {
     body: JSON.stringify({ plan }),
   });
 
-  if (!res.ok) {
-    throw new Error("Не вдалося надіслати план у Telegram-канал");
+  const parsePayload = async () => {
+    try {
+      return await res.json();
+    } catch {
+      return null;
+    }
+  };
+
+  const payload = await parsePayload();
+
+  if (!res.ok || payload?.success === false) {
+    const details = [payload?.message, payload?.error, payload?.details].filter(Boolean).join(" | ");
+    throw new Error(details || "Не вдалося надіслати план у Telegram-канал");
   }
 
-  return res.json();
+  return payload;
 };
-

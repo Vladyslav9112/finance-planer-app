@@ -12,7 +12,7 @@ import { EarningsForm } from "../../components/forms/EarningsForm";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { formatMoney } from "../../lib/utils";
 import { useAppStore } from "../../store/useAppStore";
-import type { SalaryRecord } from "../../types/entities";
+import type { EarningsRecord, SalaryRecord } from "../../types/entities";
 
 const computeOwed = (record: SalaryRecord) => {
   const auto = Math.max(record.totalAmount - record.alreadyPaid, 0);
@@ -24,6 +24,7 @@ export function SalaryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [openSalary, setOpenSalary] = useState(false);
   const [openEarnings, setOpenEarnings] = useState(false);
+  const [editingEarnings, setEditingEarnings] = useState<EarningsRecord | undefined>(undefined);
   const [payoutFor, setPayoutFor] = useState<string | null>(null);
 
   const salaryRecords = useAppStore((s) => s.salaryRecords);
@@ -31,6 +32,8 @@ export function SalaryPage() {
   const addSalaryRecord = useAppStore((s) => s.addSalaryRecord);
   const addSalaryPayout = useAppStore((s) => s.addSalaryPayout);
   const addEarningsRecord = useAppStore((s) => s.addEarningsRecord);
+  const updateEarningsRecord = useAppStore((s) => s.updateEarningsRecord);
+  const deleteEarningsRecord = useAppStore((s) => s.deleteEarningsRecord);
 
   useEffect(() => {
     if (searchParams.get("action") === "payout") {
@@ -48,29 +51,46 @@ export function SalaryPage() {
     return { total, paid, owed };
   }, [salaryRecords]);
 
+  const handleDeleteEarnings = async (id: string) => {
+    try {
+      await deleteEarningsRecord(id);
+      toast.success("Заробіток видалено");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не вдалося видалити заробіток");
+    }
+  };
+
   return (
     <div className="space-y-4">
       <SectionHeader
         title="Склад / Зарплата"
-        subtitle="ЗП + заробіток тари"
+        subtitle="Тара створює борг до видачі, а виплата автоматично його зменшує"
         action={
           <div className="flex gap-2">
             <button onClick={() => setOpenSalary(true)} className="rounded-xl bg-accent/25 px-3 py-2 text-xs text-violet-200">+ Зарплата</button>
-            <button onClick={() => setOpenEarnings(true)} className="rounded-xl bg-accentAlt/25 px-3 py-2 text-xs text-accentAlt">+ Заробіток</button>
+            <button
+              onClick={() => {
+                setEditingEarnings(undefined);
+                setOpenEarnings(true);
+              }}
+              className="rounded-xl bg-accentAlt/25 px-3 py-2 text-xs text-accentAlt"
+            >
+              + Заробіток
+            </button>
           </div>
         }
       />
 
       <section className="grid grid-cols-3 gap-2">
-        <SummaryCard title="ЗП всього" value={formatMoney(salarySummary.total)} accent="violet" />
-        <SummaryCard title="Вже отримано" value={formatMoney(salarySummary.paid)} accent="teal" />
-        <SummaryCard title="Ще повинні" value={formatMoney(salarySummary.owed)} accent="lime" />
+        <SummaryCard title="Всього нараховано" value={formatMoney(salarySummary.total)} accent="violet" />
+        <SummaryCard title="Вже видано" value={formatMoney(salarySummary.paid)} accent="teal" />
+        <SummaryCard title="Ще повинні видати" value={formatMoney(salarySummary.owed)} accent="lime" />
       </section>
 
       <section className="space-y-2">
         <h3 className="text-sm font-medium text-slate-300">1) Зарплата</h3>
         {salaryRecords.length === 0 ? (
-          <EmptyState title="Записи ЗП відсутні" description="Додайте перший запис" />
+          <EmptyState title="Записи зарплати відсутні" description="Додайте перший запис" />
         ) : (
           salaryRecords.map((record) => (
             <SalaryCard key={record.id} record={record} owed={computeOwed(record)} onPayout={setPayoutFor} />
@@ -83,18 +103,28 @@ export function SalaryPage() {
         {earningsRecords.length === 0 ? (
           <EmptyState title="Заробіток відсутній" description="Заповніть тари і збережіть" />
         ) : (
-          earningsRecords.map((record) => <EarningsCard key={record.id} record={record} />)
+          earningsRecords.map((record) => (
+            <EarningsCard
+              key={record.id}
+              record={record}
+              onEdit={(selected) => {
+                setEditingEarnings(selected);
+                setOpenEarnings(true);
+              }}
+              onDelete={handleDeleteEarnings}
+            />
+          ))
         )}
       </section>
 
-      <ModalForm open={openSalary} onClose={() => setOpenSalary(false)} title="Новий запис зарплати">
+      <ModalForm open={openSalary} onClose={() => setOpenSalary(false)} title="Нова зарплата">
         <SalaryForm
           onSubmit={(values) => {
             addSalaryRecord({
               source: values.source,
               totalAmount: values.totalAmount,
-              alreadyPaid: values.alreadyPaid,
-              expectedToReceive: Number.isFinite(values.expectedToReceive) ? values.expectedToReceive : null,
+              alreadyPaid: 0,
+              expectedToReceive: values.totalAmount,
               comment: values.comment,
               date: values.date,
             });
@@ -111,26 +141,43 @@ export function SalaryPage() {
             onSubmit={(values) => {
               try {
                 addSalaryPayout(values);
-                toast.success("Виплату проведено. Дохід додано автоматично");
+                toast.success("Виплату проведено");
                 setPayoutFor(null);
-              } catch {
-                toast.error("Не вдалося провести виплату");
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Не вдалося провести виплату");
               }
             }}
           />
         ) : null}
       </ModalForm>
 
-      <ModalForm open={openEarnings} onClose={() => setOpenEarnings(false)} title="Зберегти заробіток / тару">
+      <ModalForm
+        open={openEarnings}
+        onClose={() => {
+          setOpenEarnings(false);
+          setEditingEarnings(undefined);
+        }}
+        title={editingEarnings ? "Редагувати заробіток / тару" : "Зберегти заробіток / тару"}
+      >
         <EarningsForm
-          onSubmit={(payload) => {
-            addEarningsRecord(payload);
-            toast.success("Заробіток збережено");
-            setOpenEarnings(false);
+          defaultValues={editingEarnings}
+          onSubmit={async (payload) => {
+            try {
+              if (editingEarnings) {
+                await updateEarningsRecord(editingEarnings.id, payload);
+                toast.success("Заробіток оновлено");
+              } else {
+                addEarningsRecord(payload);
+                toast.success("Заробіток додано в ще повинні видати");
+              }
+              setOpenEarnings(false);
+              setEditingEarnings(undefined);
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : "Не вдалося зберегти заробіток");
+            }
           }}
         />
       </ModalForm>
     </div>
   );
 }
-

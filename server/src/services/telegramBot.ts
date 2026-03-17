@@ -15,10 +15,11 @@ export async function sendMessageToChannel(text: string) {
     body: JSON.stringify({ chat_id: chatId, text }),
   });
 
-  if (!response.ok) {
-    throw new Error(`Telegram API failed with status ${response.status}`);
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok || payload?.ok === false) {
+    throw new Error(payload?.description || `Telegram API failed with status ${response.status}`);
   }
 
-  return response.json();
+  return payload;
 }
-

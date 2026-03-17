@@ -7,9 +7,18 @@ export async function apiClient<T>(path: string, init?: RequestInit): Promise<T>
   });
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+    let message = `API error: ${response.status}`;
+
+    try {
+      const payload = await response.json();
+      const details = [payload?.message, payload?.error, payload?.details].filter(Boolean).join(" | ");
+      if (details) message = details;
+    } catch {
+      // ignore non-json errors
+    }
+
+    throw new Error(message);
   }
 
   return response.json() as Promise<T>;
 }
-

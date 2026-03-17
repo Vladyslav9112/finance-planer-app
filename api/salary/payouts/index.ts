@@ -14,7 +14,7 @@ export default async function handler(req: any, res: any) {
   try {
     const body = parseBody<any>(req);
     const amount = toNumber(body.amount);
-    const payoutDate = new Date(body.payoutDate);
+    const payoutDate = new Date(body.payoutDate || new Date().toISOString().slice(0, 10));
     const salaryRecordId = body.salaryRecordId as string;
 
     const result = await prisma.$transaction(async (tx) => {
@@ -45,18 +45,6 @@ export default async function handler(req: any, res: any) {
           alreadyPaid: nextAlreadyPaid,
           expectedToReceive: manualExpected,
           status: resolveStatus(Number(record.totalAmount), nextAlreadyPaid, effectiveOwed),
-        },
-      });
-
-      await tx.income.create({
-        data: {
-          amount,
-          source: `Р’РёРїР»Р°С‚Р° Р—Рџ: ${record.source} (${salaryRecordId.slice(0, 6)})`,
-          comment: body.comment || "РђРІС‚РѕРјР°С‚РёС‡РЅРѕ РґРѕРґР°РЅРѕ РїС–СЃР»СЏ РІРёРґР°С‡С– Р·Р°СЂРїР»Р°С‚Рё",
-          date: payoutDate,
-          incomeType: "salary_payout",
-          status: "received",
-          linkedSalaryPayoutId: payout.id,
         },
       });
 

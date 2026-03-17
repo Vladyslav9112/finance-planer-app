@@ -1,14 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { EarningsRecord } from "../../types/entities";
 import { TaraCalculator, toTaraEntries } from "../cards/TaraCalculator";
 
 interface EarningsFormProps {
+  defaultValues?: EarningsRecord;
   onSubmit: (payload: { date: string; comment?: string; entries: ReturnType<typeof toTaraEntries> }) => void;
 }
 
-export function EarningsForm({ onSubmit }: EarningsFormProps) {
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [comment, setComment] = useState("");
-  const [quantities, setQuantities] = useState<Record<number, number>>({ 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 });
+const toQuantities = (record?: EarningsRecord) => {
+  if (!record) return { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+
+  return record.entries.reduce<Record<number, number>>(
+    (acc, entry) => ({ ...acc, [entry.rate]: entry.quantity }),
+    { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 },
+  );
+};
+
+export function EarningsForm({ defaultValues, onSubmit }: EarningsFormProps) {
+  const [date, setDate] = useState(defaultValues?.date || new Date().toISOString().slice(0, 10));
+  const [comment, setComment] = useState(defaultValues?.comment || "");
+  const [quantities, setQuantities] = useState<Record<number, number>>(toQuantities(defaultValues));
+
+  useEffect(() => {
+    setDate(defaultValues?.date || new Date().toISOString().slice(0, 10));
+    setComment(defaultValues?.comment || "");
+    setQuantities(toQuantities(defaultValues));
+  }, [defaultValues]);
 
   return (
     <form
@@ -28,4 +45,3 @@ export function EarningsForm({ onSubmit }: EarningsFormProps) {
     </form>
   );
 }
-

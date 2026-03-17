@@ -8,13 +8,14 @@ export function StatsPanel({ stats }: { stats: StatsSummary }) {
   const pieData = [
     { name: "Доходи", value: stats.totalIncome },
     { name: "Витрати", value: stats.totalExpenses },
+    { name: "Видано", value: stats.totalSalaryPaid },
     { name: "Баланс", value: Math.max(stats.balance, 0) },
   ];
 
   const barData = [
-    { name: "План", value: stats.totalSalaryPlanned },
-    { name: "Випл.", value: stats.totalSalaryPaid },
-    { name: "Борг", value: stats.totalSalaryOwed },
+    { name: "Дохід", value: stats.totalIncome },
+    { name: "Видано", value: stats.totalSalaryPaid },
+    { name: "Витрати", value: stats.totalExpenses },
     { name: "Тара", value: stats.totalEarnings },
   ];
 
@@ -37,7 +38,8 @@ export function StatsPanel({ stats }: { stats: StatsSummary }) {
       </div>
 
       <div className="rounded-2xl border border-border bg-panel/70 p-4">
-        <h3 className="mb-3 font-medium text-white">ЗП і заробіток</h3>
+        <h3 className="mb-3 font-medium text-white">Зарплата і склад</h3>
+        <p className="mb-3 text-xs text-slate-400">Порівняння доходів, виданих сум, витрат і заробітку по тарі.</p>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={barData}>
@@ -57,4 +59,3 @@ export function StatsPanel({ stats }: { stats: StatsSummary }) {
     </div>
   );
 }
-

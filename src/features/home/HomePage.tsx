@@ -18,26 +18,10 @@ export function HomePage() {
   return (
     <div className="space-y-4">
       <section className="grid grid-cols-2 gap-3">
-        <SummaryCard
-          title="Баланс"
-          value={formatMoney(stats.balance)}
-          accent="teal"
-        />
-        <SummaryCard
-          title="Ще мають видати"
-          value={formatMoney(stats.totalSalaryOwed)}
-          accent="lime"
-        />
-        <SummaryCard
-          title="Всього зароблено"
-          value={formatMoney(stats.totalEarnings)}
-          accent="violet"
-        />
-        <SummaryCard
-          title="Доходи"
-          value={formatMoney(stats.totalIncome)}
-          accent="teal"
-        />
+        <SummaryCard title="Баланс" value={formatMoney(stats.balance)} accent="teal" />
+        <SummaryCard title="Ще повинні видати" value={formatMoney(stats.totalSalaryOwed)} accent="lime" />
+        <SummaryCard title="Витрати" value={formatMoney(stats.totalExpenses)} accent="violet" />
+        <SummaryCard title="Доходи" value={formatMoney(stats.totalIncome)} accent="teal" />
       </section>
 
       <section className="rounded-2xl border border-border bg-panel/70 p-4">
@@ -80,16 +64,14 @@ export function HomePage() {
           >
             <span className="inline-flex items-center gap-1">
               <HandCoins className="h-3.5 w-3.5" />
-              Видали ЗП
+              Видати ЗП
             </span>
           </Link>
         </div>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">
-          Сьогоднішні плани
-        </h2>
+        <h2 className="text-base font-semibold text-white">Сьогоднішні плани</h2>
         {todayPlans.length === 0 ? (
           <EmptyState
             title="На сьогодні порожньо"
