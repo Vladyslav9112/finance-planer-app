@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sendMessageToChannel } from "../services/telegramBot";
+import { sendMessageToChannel } from "../services/telegramBot.js";
 
 export const telegramRouter = Router();
 

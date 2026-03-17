@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { prisma } from "../db/client";
+import { prisma } from "../db/client.js";
 
 const earningsMarker = (earningsId: string) => `[earnings:${earningsId}]`;
 

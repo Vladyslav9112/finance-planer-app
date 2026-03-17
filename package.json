@@ -10,7 +10,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "server:dev": "tsx watch server/src/index.ts",
-    "server:start": "tsx server/src/index.ts",
+    "server:build": "tsc -p tsconfig.server.json",
+    "server:start": "npm run server:build && node .server-dist/server/src/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy"
