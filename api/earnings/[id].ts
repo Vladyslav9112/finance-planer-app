@@ -14,6 +14,10 @@ export default async function handler(req: any, res: any) {
 
   try {
     if (req.method === "DELETE") {
+      const earnings = await prisma.earningsRecord.findUnique({ where: { id } });
+      if (!earnings) {
+        return json(res, 404, { error: "Earnings record not found" });
+      }
       await prisma.$transaction(async (tx) => {
         await tx.salaryRecord.deleteMany({
           where: {
@@ -22,11 +26,9 @@ export default async function handler(req: any, res: any) {
             },
           },
         });
-
         await tx.taraEntry.deleteMany({ where: { earningsRecordId: id } });
         await tx.earningsRecord.deleteMany({ where: { id } });
       });
-
       return json(res, 200, { success: true });
     }
 
@@ -38,9 +40,12 @@ export default async function handler(req: any, res: any) {
     }));
     const totalAmount = entries.reduce((acc: number, item: { sum: number }) => acc + item.sum, 0);
 
+    const earnings = await prisma.earningsRecord.findUnique({ where: { id } });
+    if (!earnings) {
+      return json(res, 404, { error: "Earnings record not found" });
+    }
     const updated = await prisma.$transaction(async (tx) => {
       await tx.taraEntry.deleteMany({ where: { earningsRecordId: id } });
-
       const earnings = await tx.earningsRecord.update({
         where: { id },
         data: {
@@ -53,7 +58,6 @@ export default async function handler(req: any, res: any) {
         },
         include: { entries: true },
       });
-
       const linkedSalary = await tx.salaryRecord.findFirst({
         where: {
           comment: {
@@ -61,6 +65,14 @@ export default async function handler(req: any, res: any) {
           },
         },
       });
+      // ...existing code...
+      return earnings;
+    });
+    return json(res, 200, serializeEarnings(updated));
+  } catch (error) {
+    console.error('Earnings API error:', error);
+    return json(res, 500, { error: "Failed to process earnings item", details: error instanceof Error ? error.message : String(error) });
+  }
 
       if (linkedSalary) {
         const alreadyPaid = Number(linkedSalary.alreadyPaid);

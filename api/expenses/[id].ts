@@ -6,9 +6,17 @@ export default async function handler(req: any, res: any) {
   const id = req.query.id as string;
 
   try {
-    await prisma.expense.deleteMany({ where: { id } });
+    const expense = await prisma.expense.findUnique({ where: { id } });
+    if (!expense) {
+      return json(res, 404, { error: "Expense not found" });
+    }
+    await prisma.expense.delete({ where: { id } });
     return json(res, 200, { success: true });
   } catch (error) {
-    return json(res, 500, { error: "Failed to delete expense", details: String(error) });
+    console.error("Expense API error:", error);
+    return json(res, 500, {
+      error: "Failed to delete expense",
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
 }
