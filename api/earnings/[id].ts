@@ -63,7 +63,46 @@ export default async function handler(req: any, res: any) {
           },
           include: { entries: true },
         });
-        // ...existing code...
+
+        // Логіка salaryRecord
+        const linkedSalary = await tx.salaryRecord.findFirst({
+          where: {
+            comment: {
+              contains: earningsMarker(id),
+            },
+          },
+        });
+        if (linkedSalary) {
+          const alreadyPaid = Number(linkedSalary.alreadyPaid);
+          const expectedToReceive = Math.max(totalAmount - alreadyPaid, 0);
+          await tx.salaryRecord.update({
+            where: { id: linkedSalary.id },
+            data: {
+              source: `Склад / тара ${body.date}`,
+              totalAmount,
+              expectedToReceive,
+              comment: toSalaryComment(id, body.comment),
+              date: new Date(body.date),
+              status:
+                alreadyPaid <= 0
+                  ? "awaiting"
+                  : expectedToReceive <= 0 || alreadyPaid >= totalAmount
+                    ? "paid"
+                    : "partially_paid",
+            },
+          });
+        } else {
+          await tx.salaryRecord.create({
+            data: {
+              source: `Склад / тара ${body.date}`,
+              totalAmount,
+              expectedToReceive: totalAmount,
+              comment: toSalaryComment(id, body.comment),
+              date: new Date(body.date),
+              status: "awaiting",
+            },
+          });
+        }
         return earnings;
       });
       return json(res, 200, serializeEarnings(updated));
