@@ -8,11 +8,13 @@ export default async function handler(req: any, res: any) {
       bodyParser: true,
     },
   };
-  if (!allowMethods(req, res, ["PATCH", "DELETE"])) return;
+  if (!allowMethods(req, res, ["POST"])) return;
   const id = req.query.id as string;
 
   try {
-    if (req.method === "DELETE") {
+    const body = parseBody<any>(req);
+    const action = body.action;
+    if (action === "delete") {
       const plan = await prisma.plan.findUnique({ where: { id } });
       if (!plan) {
         return json(res, 404, { error: "Plan not found" });
@@ -20,24 +22,31 @@ export default async function handler(req: any, res: any) {
       await prisma.plan.delete({ where: { id } });
       return json(res, 200, { success: true });
     }
-
-    const body = parseBody<any>(req);
-    const plan = await prisma.plan.findUnique({ where: { id } });
-    if (!plan) {
-      return json(res, 404, { error: "Plan not found" });
+    if (action === "patch") {
+      const plan = await prisma.plan.findUnique({ where: { id } });
+      if (!plan) {
+        return json(res, 404, { error: "Plan not found" });
+      }
+      const updated = await prisma.plan.update({
+        where: { id },
+        data: {
+          ...(body.title !== undefined ? { title: body.title } : {}),
+          ...(body.description !== undefined ? { description: body.description } : {}),
+          ...(body.date !== undefined ? { date: new Date(body.date) } : {}),
+          ...(body.time !== undefined ? { time: body.time } : {}),
+          ...(body.status !== undefined ? { status: body.status } : {}),
+          ...(body.priority !== undefined ? { priority: body.priority } : {}),
+          ...(body.category !== undefined ? { category: body.category } : {}),
+          ...(body.notifyToChannel !== undefined ? { notifyToChannel: Boolean(body.notifyToChannel) } : {}),
+        },
+      });
+      return json(res, 200, serializePlan(updated));
     }
-    const updated = await prisma.plan.update({
-      where: { id },
-      data: {
-        ...(body.title !== undefined ? { title: body.title } : {}),
-        ...(body.description !== undefined
-          ? { description: body.description }
-          : {}),
-        ...(body.date !== undefined ? { date: new Date(body.date) } : {}),
-        ...(body.time !== undefined ? { time: body.time } : {}),
-        ...(body.status !== undefined ? { status: body.status } : {}),
-        ...(body.priority !== undefined ? { priority: body.priority } : {}),
-        ...(body.category !== undefined ? { category: body.category } : {}),
+    return json(res, 400, { error: "Unknown action" });
+  } catch (error) {
+    console.error('Plan API error:', error);
+    return json(res, 500, { error: "Failed to process plan request", details: error instanceof Error ? error.message : String(error) });
+  }
         ...(body.notifyToChannel !== undefined
           ? { notifyToChannel: Boolean(body.notifyToChannel) }
           : {}),
