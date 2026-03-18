@@ -97,6 +97,7 @@ export default async function handler(req: any, res: any) {
               source: `Склад / тара ${body.date}`,
               totalAmount,
               expectedToReceive: totalAmount,
+              alreadyPaid: 0,
               comment: toSalaryComment(id, body.comment),
               date: new Date(body.date),
               status: "awaiting",
