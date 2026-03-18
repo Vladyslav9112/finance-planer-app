@@ -3,12 +3,14 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "main": "server/src/index.ts",
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "vite",
     "vercel-build": "prisma db push && npm run build",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "start": "node .server-dist/server/src/index.js",
     "server:dev": "tsx watch server/src/index.ts",
     "server:build": "tsc -p tsconfig.server.json",
     "server:start": "npm run server:build && node .server-dist/server/src/index.js",
@@ -50,4 +52,3 @@
     "vite": "^6.3.5"
   }
 }
-
