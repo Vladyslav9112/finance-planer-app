@@ -2,6 +2,11 @@ import { prisma } from "../_lib/prisma.js";
 import { allowMethods, json } from "../_lib/http.js";
 
 export default async function handler(req: any, res: any) {
+  export const config = {
+    api: {
+      bodyParser: true,
+    },
+  };
   if (!allowMethods(req, res, ["DELETE"])) return;
   const id = req.query.id as string;
 

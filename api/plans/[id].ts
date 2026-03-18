@@ -3,6 +3,11 @@ import { allowMethods, json, parseBody } from "../_lib/http.js";
 import { serializePlan } from "../_lib/serializers.js";
 
 export default async function handler(req: any, res: any) {
+  export const config = {
+    api: {
+      bodyParser: true,
+    },
+  };
   if (!allowMethods(req, res, ["PATCH", "DELETE"])) return;
   const id = req.query.id as string;
 

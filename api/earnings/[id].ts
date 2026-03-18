@@ -8,6 +8,11 @@ const toSalaryComment = (earningsId: string, comment?: string | null) =>
   [earningsMarker(earningsId), comment?.trim()].filter(Boolean).join(" ");
 
 export default async function handler(req: any, res: any) {
+  export const config = {
+    api: {
+      bodyParser: true,
+    },
+  };
   if (!allowMethods(req, res, ["PATCH", "DELETE"])) return;
 
   const id = req.query.id as string;
