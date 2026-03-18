@@ -29,14 +29,30 @@ export default async function handler(req: any, res: any) {
   try {
     const body = parseBody<any>(req);
     const plan = body.plan;
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: channelId,
-        text: formatPlanText(plan),
-      }),
-    });
+    const response = await fetch(
+      `https://api.telegram.org/bot${botToken}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: channelId,
+          text: formatPlanText(plan),
+        }),
+      },
+    );
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || payload?.ok === false) {
+      console.error("Telegram API error:", payload);
+      return json(res, 500, {
+        success: false,
+        message: "Telegram API error",
+        details:
+          payload?.description ||
+          `Telegram API failed with status ${response.status}`,
+        telegramPayload: payload,
+      });
+    }
+    return json(res, 200, { success: true, telegramPayload: payload });
 
     const telegramPayload = await response.json().catch(() => null);
 
@@ -50,6 +66,10 @@ export default async function handler(req: any, res: any) {
 
     return json(res, 200, { success: true, message: "Sent" });
   } catch (error) {
-    return json(res, 500, { success: false, message: "Failed", details: String(error) });
+    return json(res, 500, {
+      success: false,
+      message: "Failed",
+      details: String(error),
+    });
   }
 }
