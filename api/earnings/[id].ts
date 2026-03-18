@@ -2,17 +2,18 @@ import { prisma } from "../_lib/prisma.js";
 import { allowMethods, json, parseBody, toNumber } from "../_lib/http.js";
 import { serializeEarnings } from "../_lib/serializers.js";
 
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 const earningsMarker = (earningsId: string) => `[earnings:${earningsId}]`;
 
 const toSalaryComment = (earningsId: string, comment?: string | null) =>
   [earningsMarker(earningsId), comment?.trim()].filter(Boolean).join(" ");
 
 export default async function handler(req: any, res: any) {
-  export const config = {
-    api: {
-      bodyParser: true,
-    },
-  };
   if (!allowMethods(req, res, ["POST"])) return;
 
   const id = req.query.id as string;
@@ -20,13 +21,16 @@ export default async function handler(req: any, res: any) {
   try {
     const body = parseBody<any>(req);
     const action = body.action;
+
     if (action === "delete") {
       const earnings = await prisma.earningsRecord.findUnique({
         where: { id },
       });
+
       if (!earnings) {
         return json(res, 404, { error: "Earnings record not found" });
       }
+
       await prisma.$transaction(async (tx) => {
         await tx.salaryRecord.deleteMany({
           where: {
@@ -38,26 +42,33 @@ export default async function handler(req: any, res: any) {
         await tx.taraEntry.deleteMany({ where: { earningsRecordId: id } });
         await tx.earningsRecord.deleteMany({ where: { id } });
       });
+
       return json(res, 200, { success: true });
     }
+
     if (action === "patch") {
       const entries = (body.entries || []).map((entry: any) => ({
         rate: toNumber(entry.rate),
         quantity: toNumber(entry.quantity),
         sum: toNumber(entry.sum),
       }));
+
       const totalAmount = entries.reduce(
         (acc: number, item: { sum: number }) => acc + item.sum,
         0,
       );
+
       const earnings = await prisma.earningsRecord.findUnique({
         where: { id },
       });
+
       if (!earnings) {
         return json(res, 404, { error: "Earnings record not found" });
       }
+
       const updated = await prisma.$transaction(async (tx) => {
         await tx.taraEntry.deleteMany({ where: { earningsRecordId: id } });
+
         const earnings = await tx.earningsRecord.update({
           where: { id },
           data: {
@@ -71,7 +82,6 @@ export default async function handler(req: any, res: any) {
           include: { entries: true },
         });
 
-        // Логіка salaryRecord
         const linkedSalary = await tx.salaryRecord.findFirst({
           where: {
             comment: {
@@ -79,9 +89,11 @@ export default async function handler(req: any, res: any) {
             },
           },
         });
+
         if (linkedSalary) {
           const alreadyPaid = Number(linkedSalary.alreadyPaid);
           const expectedToReceive = Math.max(totalAmount - alreadyPaid, 0);
+
           await tx.salaryRecord.update({
             where: { id: linkedSalary.id },
             data: {
@@ -111,10 +123,13 @@ export default async function handler(req: any, res: any) {
             },
           });
         }
+
         return earnings;
       });
+
       return json(res, 200, serializeEarnings(updated));
     }
+
     return json(res, 400, { error: "Unknown action" });
   } catch (error) {
     console.error("Earnings API error:", error);
@@ -123,6 +138,4 @@ export default async function handler(req: any, res: any) {
       details: error instanceof Error ? error.message : String(error),
     });
   }
-
-  // ...existing code...
 }

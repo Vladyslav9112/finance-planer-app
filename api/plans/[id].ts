@@ -2,12 +2,13 @@ import { prisma } from "../_lib/prisma.js";
 import { allowMethods, json, parseBody } from "../_lib/http.js";
 import { serializePlan } from "../_lib/serializers.js";
 
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 export default async function handler(req: any, res: any) {
-  export const config = {
-    api: {
-      bodyParser: true,
-    },
-  };
   if (!allowMethods(req, res, ["POST"])) return;
   const id = req.query.id as string;
 
@@ -54,5 +55,4 @@ export default async function handler(req: any, res: any) {
       details: error instanceof Error ? error.message : String(error),
     });
   }
-  // ...existing code...
 }
