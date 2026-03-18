@@ -21,7 +21,9 @@ export default async function handler(req: any, res: any) {
     const body = parseBody<any>(req);
     const action = body.action;
     if (action === "delete") {
-      const earnings = await prisma.earningsRecord.findUnique({ where: { id } });
+      const earnings = await prisma.earningsRecord.findUnique({
+        where: { id },
+      });
       if (!earnings) {
         return json(res, 404, { error: "Earnings record not found" });
       }
@@ -44,8 +46,13 @@ export default async function handler(req: any, res: any) {
         quantity: toNumber(entry.quantity),
         sum: toNumber(entry.sum),
       }));
-      const totalAmount = entries.reduce((acc: number, item: { sum: number }) => acc + item.sum, 0);
-      const earnings = await prisma.earningsRecord.findUnique({ where: { id } });
+      const totalAmount = entries.reduce(
+        (acc: number, item: { sum: number }) => acc + item.sum,
+        0,
+      );
+      const earnings = await prisma.earningsRecord.findUnique({
+        where: { id },
+      });
       if (!earnings) {
         return json(res, 404, { error: "Earnings record not found" });
       }
@@ -110,49 +117,12 @@ export default async function handler(req: any, res: any) {
     }
     return json(res, 400, { error: "Unknown action" });
   } catch (error) {
-    console.error('Earnings API error:', error);
-    return json(res, 500, { error: "Failed to process earnings item", details: error instanceof Error ? error.message : String(error) });
-  }
-
-      if (linkedSalary) {
-        const alreadyPaid = Number(linkedSalary.alreadyPaid);
-        const expectedToReceive = Math.max(totalAmount - alreadyPaid, 0);
-
-        await tx.salaryRecord.update({
-          where: { id: linkedSalary.id },
-          data: {
-            source: `Склад / тара ${body.date}`,
-            totalAmount,
-            expectedToReceive,
-            comment: toSalaryComment(id, body.comment),
-            date: new Date(body.date),
-            status:
-              alreadyPaid <= 0
-                ? "awaiting"
-                : expectedToReceive <= 0 || alreadyPaid >= totalAmount
-                  ? "paid"
-                  : "partially_paid",
-          },
-        });
-      } else {
-        await tx.salaryRecord.create({
-          data: {
-            source: `Склад / тара ${body.date}`,
-            totalAmount,
-            alreadyPaid: 0,
-            expectedToReceive: totalAmount,
-            comment: toSalaryComment(id, body.comment),
-            date: new Date(body.date),
-            status: "awaiting",
-          },
-        });
-      }
-
-      return earnings;
+    console.error("Earnings API error:", error);
+    return json(res, 500, {
+      error: "Failed to process earnings item",
+      details: error instanceof Error ? error.message : String(error),
     });
-
-    return json(res, 200, serializeEarnings(updated));
-  } catch (error) {
-    return json(res, 500, { error: "Failed to process earnings item", details: String(error) });
   }
+
+  // ...existing code...
 }
