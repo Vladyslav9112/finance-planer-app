@@ -25,7 +25,14 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 24, color: "#f87171", fontFamily: "monospace", fontSize: 13 }}>
+        <div
+          style={{
+            padding: 24,
+            color: "#f87171",
+            fontFamily: "monospace",
+            fontSize: 13,
+          }}
+        >
           <b>Помилка рендеру:</b>
           <pre style={{ whiteSpace: "pre-wrap", marginTop: 8 }}>
             {this.state.error.message}
