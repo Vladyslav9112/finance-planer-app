@@ -12,11 +12,11 @@ export const diagnoseTelegram = async (): Promise<void> => {
   const prefix = "[TelegramDiagnostic]";
 
   if (!BOT_TOKEN || BOT_TOKEN === "") {
-    console.error(`${prefix} ❌ VITE_TELEGRAM_BOT_TOKEN is not set`);
+    console.error(`${prefix} ❌ NEXT_PUBLIC_TELEGRAM_BOT_TOKEN is not set`);
     return;
   }
   if (!CHANNEL_ID || CHANNEL_ID === "") {
-    console.error(`${prefix} ❌ VITE_TELEGRAM_CHANNEL_ID is not set`);
+    console.error(`${prefix} ❌ NEXT_PUBLIC_TELEGRAM_CHANNEL_ID is not set`);
     return;
   }
 
