@@ -14,7 +14,8 @@ if (tg) {
   // Telegram Desktop webview doesn't propagate height via CSS 100% chain.
   // Explicitly set the root element height from the stable viewport height.
   const applyTgHeight = () => {
-    const h = tg.viewportStableHeight || tg.viewportHeight;
+    const h =
+      tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
     if (h > 0) {
       const hpx = `${h}px`;
       document.documentElement.style.setProperty("height", hpx, "important");
@@ -25,6 +26,7 @@ if (tg) {
   };
   applyTgHeight();
   tg.onEvent("viewportChanged", applyTgHeight);
+  tg.onEvent("themeChanged", applyTgHeight);
 }
 
 // Verify bot token + channel in console on every load

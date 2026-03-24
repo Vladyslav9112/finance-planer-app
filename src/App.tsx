@@ -14,8 +14,9 @@ const App: React.FC = () => {
     <HashRouter>
       <div
         style={{
+          position: "relative",
+          zIndex: 0,
           height: "100%",
-          minHeight: "100svh",
           display: "flex",
           flexDirection: "column",
         }}
@@ -27,15 +28,26 @@ const App: React.FC = () => {
         <Toast />
 
         {/* App routes */}
-        <Routes>
-          <Route path="/" element={<AppLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="planner" element={<PlannerPage />} />
-            <Route path="finance" element={<FinancePage />} />
-            <Route path="warehouse" element={<WarehousePage />} />
-            <Route path="stats" element={<StatsPage />} />
-          </Route>
-        </Routes>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
+          <Routes>
+            <Route path="/" element={<AppLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="planner" element={<PlannerPage />} />
+              <Route path="finance" element={<FinancePage />} />
+              <Route path="warehouse" element={<WarehousePage />} />
+              <Route path="stats" element={<StatsPage />} />
+            </Route>
+          </Routes>
+        </div>
       </div>
     </HashRouter>
   );
