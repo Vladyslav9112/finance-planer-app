@@ -42,7 +42,8 @@ const HomePage: React.FC = () => {
   const { plans, addPlan, updatePlan, deletePlan, markComplete } =
     usePlanStore();
   const todayPlans = usePlanStore(selectTodayPlans);
-  const { totalAmountOwedToMe, addSalaryPayout } = useWarehouseStore();
+  const { totalAmountOwedToMe, totalEarningsFromTara, addSalaryPayout } =
+    useWarehouseStore();
   const { addToast } = useAppStore();
 
   const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
@@ -145,6 +146,16 @@ const HomePage: React.FC = () => {
           icon={<ListTodo size={18} />}
           accentColor="teal"
           delay={0.2}
+        />
+        <SummaryCard
+          title="Залишок до видачі"
+          value={totalAmountOwedToMe}
+          icon={<Banknote size={18} />}
+          isCurrency
+          accentColor="violet"
+          subtitle={`Зароблено по тарі: ${formatCurrency(totalEarningsFromTara)}`}
+          delay={0.25}
+          className="col-span-2"
         />
       </div>
 
