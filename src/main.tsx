@@ -14,10 +14,13 @@ if (tg) {
   // Telegram Desktop webview doesn't propagate height via CSS 100% chain.
   // Explicitly set the root element height from the stable viewport height.
   const applyTgHeight = () => {
-    const h = tg.viewportStableHeight;
+    const h = tg.viewportStableHeight || tg.viewportHeight;
     if (h > 0) {
-      document.documentElement.style.height = `${h}px`;
-      document.body.style.height = `${h}px`;
+      const hpx = `${h}px`;
+      document.documentElement.style.setProperty("height", hpx, "important");
+      document.body.style.setProperty("height", hpx, "important");
+      const root = document.getElementById("root");
+      if (root) root.style.setProperty("height", hpx, "important");
     }
   };
   applyTgHeight();

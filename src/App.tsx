@@ -12,22 +12,31 @@ import StatsPage from "./pages/StatsPage";
 const App: React.FC = () => {
   return (
     <HashRouter>
-      {/* Layered background (fixed, z-0) */}
-      <AnimatedBackground />
+      <div
+        style={{
+          height: "100%",
+          minHeight: "100svh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Layered background (fixed, z-0) */}
+        <AnimatedBackground />
 
-      {/* Toast notifications */}
-      <Toast />
+        {/* Toast notifications */}
+        <Toast />
 
-      {/* App routes */}
-      <Routes>
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<HomePage />} />
-          <Route path="planner" element={<PlannerPage />} />
-          <Route path="finance" element={<FinancePage />} />
-          <Route path="warehouse" element={<WarehousePage />} />
-          <Route path="stats" element={<StatsPage />} />
-        </Route>
-      </Routes>
+        {/* App routes */}
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="planner" element={<PlannerPage />} />
+            <Route path="finance" element={<FinancePage />} />
+            <Route path="warehouse" element={<WarehousePage />} />
+            <Route path="stats" element={<StatsPage />} />
+          </Route>
+        </Routes>
+      </div>
     </HashRouter>
   );
 };
