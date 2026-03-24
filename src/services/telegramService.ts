@@ -6,6 +6,63 @@ const CHANNEL_ID = import.meta.env.VITE_TELEGRAM_CHANNEL_ID;
 const isTelegramConfigured = () =>
   Boolean(BOT_TOKEN && CHANNEL_ID && BOT_TOKEN !== "" && CHANNEL_ID !== "");
 
+// ─── Diagnostics ──────────────────────────────────────────────────────────────
+
+export const diagnoseTelegram = async (): Promise<void> => {
+  const prefix = "[TelegramDiagnostic]";
+
+  if (!BOT_TOKEN || BOT_TOKEN === "") {
+    console.error(`${prefix} ❌ VITE_TELEGRAM_BOT_TOKEN is not set`);
+    return;
+  }
+  if (!CHANNEL_ID || CHANNEL_ID === "") {
+    console.error(`${prefix} ❌ VITE_TELEGRAM_CHANNEL_ID is not set`);
+    return;
+  }
+
+  // Verify token via getMe
+  try {
+    const meRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);
+    const me = await meRes.json();
+    if (me.ok) {
+      console.info(
+        `${prefix} ✅ Token valid. Bot: @${me.result.username} (${me.result.first_name})`,
+      );
+    } else {
+      console.error(`${prefix} ❌ Token invalid:`, me.description);
+      return;
+    }
+  } catch (e) {
+    console.error(`${prefix} ❌ getMe network error:`, e);
+    return;
+  }
+
+  // Verify channel/chat
+  try {
+    const chatRes = await fetch(
+      `https://api.telegram.org/bot${BOT_TOKEN}/getChat`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: CHANNEL_ID }),
+      },
+    );
+    const chat = await chatRes.json();
+    if (chat.ok) {
+      console.info(
+        `${prefix} ✅ Chat found: "${chat.result.title ?? chat.result.username ?? CHANNEL_ID}" (type: ${chat.result.type})`,
+      );
+    } else {
+      console.error(
+        `${prefix} ❌ Chat not found (id: ${CHANNEL_ID}):`,
+        chat.description,
+      );
+    }
+  } catch (e) {
+    console.error(`${prefix} ❌ getChat network error:`, e);
+  }
+};
+
 // ─── Core sender ──────────────────────────────────────────────────────────────
 
 export const sendMessageToChannel = async (text: string): Promise<boolean> => {

@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import { diagnoseTelegram } from "./services/telegramService";
 
 // Call tg.ready() BEFORE React renders so Telegram doesn't
 // keep showing the loading placeholder if React is slow or throws
@@ -9,7 +10,22 @@ const tg = window.Telegram?.WebApp;
 if (tg) {
   tg.ready();
   tg.expand();
+
+  // Telegram Desktop webview doesn't propagate height via CSS 100% chain.
+  // Explicitly set the root element height from the stable viewport height.
+  const applyTgHeight = () => {
+    const h = tg.viewportStableHeight;
+    if (h > 0) {
+      document.documentElement.style.height = `${h}px`;
+      document.body.style.height = `${h}px`;
+    }
+  };
+  applyTgHeight();
+  tg.onEvent("viewportChanged", applyTgHeight);
 }
+
+// Verify bot token + channel in console on every load
+diagnoseTelegram();
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },

@@ -8,17 +8,20 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     height: 100%;
+    min-height: 100svh;
   }
 
   body {
     background-color: #090910;
     color: #f8f8ff;
     height: 100%;
+    min-height: 100svh;
     overflow: hidden;
   }
 
   #root {
     height: 100%;
+    min-height: 100svh;
   }
 
   /* Custom scrollbar */
