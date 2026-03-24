@@ -1,0 +1,117 @@
+// Prisma schema for PostgreSQL / Neon
+// Prisma 7+: connection URL moved to prisma.config.ts
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Plan ─────────────────────────────────────────────────────────────────────
+
+enum PlanStatus {
+  scheduled
+  completed
+  cancelled
+}
+
+enum PlanPriority {
+  low
+  medium
+  high
+}
+
+model Plan {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  date        String       // YYYY-MM-DD
+  time        String?      // HH:mm
+  status      PlanStatus   @default(scheduled)
+  priority    PlanPriority @default(medium)
+  category    String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("plans")
+}
+
+// ─── Finance ──────────────────────────────────────────────────────────────────
+
+enum IncomeType {
+  salary_payout
+  freelance
+  business
+  investment
+  bonus
+  other
+}
+
+model Income {
+  id                   String      @id @default(uuid())
+  amount               Float
+  source               String
+  comment              String?
+  date                 String      // YYYY-MM-DD
+  type                 IncomeType  @default(other)
+  relatedSalaryPayoutId String?    // FK to SalaryPayout
+  salaryPayout         SalaryPayout? @relation(fields: [relatedSalaryPayoutId], references: [id], onDelete: SetNull)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  @@map("incomes")
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  amount    Float
+  category  String
+  comment   String?
+  date      String   // YYYY-MM-DD
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("expenses")
+}
+
+// ─── Warehouse / Tara / Salary ────────────────────────────────────────────────
+
+model EarningsRecord {
+  id          String       @id @default(uuid())
+  date        String       // YYYY-MM-DD
+  totalAmount Float
+  comment     String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  entries     TaraEntry[]
+
+  @@map("earnings_records")
+}
+
+model TaraEntry {
+  id               String         @id @default(uuid())
+  rate             Int            // 2 | 3 | 4 | 5 | 6 | 7
+  quantity         Float
+  amount           Float          // rate * quantity
+  earningsRecordId String
+  earningsRecord   EarningsRecord @relation(fields: [earningsRecordId], references: [id], onDelete: Cascade)
+
+  @@map("tara_entries")
+}
+
+model SalaryPayout {
+  id              String   @id @default(uuid())
+  source          String
+  amount          Float
+  date            String   // YYYY-MM-DD
+  comment         String?
+  relatedIncomeId String?  @unique
+  income          Income[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("salary_payouts")
+}

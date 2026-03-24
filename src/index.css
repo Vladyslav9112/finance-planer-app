@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    height: 100%;
+  }
+
+  body {
+    background-color: #090910;
+    color: #f8f8ff;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #root {
+    height: 100%;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+
+  /* Date input fix */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.6);
+    cursor: pointer;
+  }
+
+  /* Select option dark background */
+  option {
+    background-color: #212133;
+    color: #f8f8ff;
+  }
+}
+
+@layer utilities {
+  /* Font weight utilities */
+  .font-900 {
+    font-weight: 900;
+  }
+  .font-800 {
+    font-weight: 800;
+  }
+  .font-700 {
+    font-weight: 700;
+  }
+  .font-600 {
+    font-weight: 600;
+  }
+  .font-500 {
+    font-weight: 500;
+  }
+
+  /* Premium glass variant */
+  .glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  /* Glow text */
+  .text-glow-lime {
+    text-shadow: 0 0 20px rgba(163, 230, 53, 0.5);
+  }
+  .text-glow-teal {
+    text-shadow: 0 0 20px rgba(45, 212, 191, 0.5);
+  }
+  .text-glow-violet {
+    text-shadow: 0 0 20px rgba(167, 139, 250, 0.5);
+  }
+}
