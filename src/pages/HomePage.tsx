@@ -42,8 +42,7 @@ const HomePage: React.FC = () => {
   const { plans, addPlan, updatePlan, deletePlan, markComplete } =
     usePlanStore();
   const todayPlans = usePlanStore(selectTodayPlans);
-  const { totalAmountOwedToMe, addSalaryPayout } =
-    useWarehouseStore();
+  const { totalAmountOwedToMe, addSalaryPayout } = useWarehouseStore();
   const { addToast } = useAppStore();
 
   const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
