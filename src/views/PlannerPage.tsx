@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, CalendarCheck, Filter, X } from "lucide-react";
+import { Plus, Search, CalendarCheck, Filter, X, Bell } from "lucide-react";
 import { usePlanStore, selectFilteredPlans } from "../store/usePlanStore";
 import { useAppStore } from "../store/useAppStore";
 import { PlanCard } from "../components/plans/PlanCard";
@@ -9,8 +9,11 @@ import { ModalForm } from "../components/ui/ModalForm";
 import { SectionHeader } from "../components/ui/SectionHeader";
 import { EmptyState } from "../components/ui/EmptyState";
 import { Badge } from "../components/ui/Badge";
-import { cn } from "../lib/utils";
-import { sendPlanToChannel } from "../services/telegramService";
+import { cn, today } from "../lib/utils";
+import {
+  sendPlanToChannel,
+  sendTodayPlansReminder,
+} from "../services/telegramService";
 import type { Plan, PlanStatus, PlanPriority } from "../types";
 import { PRIORITY_LABELS, STATUS_LABELS } from "../lib/constants";
 
@@ -31,6 +34,22 @@ const PlannerPage: React.FC = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
+
+  const handleSendTodayReminder = async () => {
+    setSendingReminder(true);
+    const todayPlans = plans.filter(
+      (p) => p.date === today() && p.status === "scheduled",
+    );
+    const ok = await sendTodayPlansReminder(todayPlans);
+    addToast(
+      ok
+        ? `Нагадування відправлено (${todayPlans.length} планів) ✅`
+        : "Помилка відправки в Telegram",
+      ok ? "success" : "error",
+    );
+    setSendingReminder(false);
+  };
 
   const activeFilterCount = [
     filters.status && filters.status !== "all",
@@ -76,9 +95,9 @@ const PlannerPage: React.FC = () => {
   return (
     <div className="px-4 pt-6 pb-4 space-y-5">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-2">
         <div>
-          <h1 className="text-xl font-800 text-white">Планер</h1>
+          <h1 className="text-lg font-700 text-white">Планер</h1>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant="teal" dot>
               {scheduledCount} активних
@@ -88,13 +107,23 @@ const PlannerPage: React.FC = () => {
             </Badge>
           </div>
         </div>
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-accent-teal/15 border border-accent-teal/30 text-accent-teal text-sm font-700 hover:bg-accent-teal/25 transition-all active:scale-95 flex-shrink-0"
-        >
-          <Plus size={16} />
-          Новий план
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={handleSendTodayReminder}
+            disabled={sendingReminder}
+            title="Нагадати сьогоднішні плани в Telegram"
+            className="flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-white/50 text-sm font-600 hover:bg-accent-violet/15 hover:border-accent-violet/30 hover:text-accent-violet transition-all active:scale-95 disabled:opacity-50"
+          >
+            <Bell size={15} />
+          </button>
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-accent-teal/15 border border-accent-teal/30 text-accent-teal text-sm font-700 hover:bg-accent-teal/25 transition-all active:scale-95"
+          >
+            <Plus size={16} />
+            Новий план
+          </button>
+        </div>
       </div>
 
       {/* Search + filter bar */}

@@ -142,3 +142,33 @@ export const sendEarningsNotification = async (
   const text = `📦 <b>Заробіток по тарі</b>\n💰 Сума: ${totalAmount} ₴\n📅 Дата: ${date}`;
   return sendMessageToChannel(text);
 };
+
+// ─── Today's plans reminder ────────────────────────────────────────────────────
+
+export const sendTodayPlansReminder = async (
+  plans: Plan[],
+): Promise<boolean> => {
+  if (plans.length === 0) {
+    return sendMessageToChannel(
+      `🔔 <b>Нагадування на сьогодні</b>\n\n📭 Активних планів на сьогодні немає.`,
+    );
+  }
+
+  const priorityEmoji = (p: Plan["priority"]) =>
+    p === "high" ? "🔴" : p === "medium" ? "🟡" : "🟢";
+
+  const lines = plans.map((plan) => {
+    const time = plan.time ? ` о ${plan.time}` : "";
+    const cat = plan.category ? ` [${plan.category}]` : "";
+    return `${priorityEmoji(plan.priority)} <b>${plan.title}</b>${cat}${time}${plan.description ? `\n    📝 ${plan.description}` : ""}`;
+  });
+
+  const text = [
+    `🔔 <b>Нагадування на сьогодні</b>`,
+    `📅 Активних планів: ${plans.length}`,
+    ``,
+    ...lines,
+  ].join("\n");
+
+  return sendMessageToChannel(text);
+};

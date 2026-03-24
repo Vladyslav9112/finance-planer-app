@@ -137,7 +137,7 @@ const StatsPage: React.FC = () => {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-xl font-800 text-white">Статистика</h1>
+        <h1 className="text-lg font-700 text-white">Статистика</h1>
         <p className="text-xs text-white/35 mt-0.5">Загальна аналітика</p>
       </motion.div>
 

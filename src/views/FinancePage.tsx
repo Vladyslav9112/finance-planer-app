@@ -167,7 +167,7 @@ const FinancePage: React.FC = () => {
     <div className="px-4 pt-6 pb-4 space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-800 text-white mb-3">Фінанси</h1>
+        <h1 className="text-lg font-700 text-white mb-3">Фінанси</h1>
         {/* Summary cards */}
         <div className="grid grid-cols-3 gap-2.5">
           <SummaryCard

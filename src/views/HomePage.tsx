@@ -109,7 +109,7 @@ const HomePage: React.FC = () => {
         <p className="text-xs text-white/35 font-500 mb-0.5 uppercase tracking-widest">
           {dayjs().format("dddd, D MMMM")}
         </p>
-        <h1 className="text-2xl font-800 text-white">{greeting()} 👋</h1>
+        <h1 className="text-xl font-700 text-white">{greeting()} 👋</h1>
         <p className="text-sm text-white/40 mt-1">Finance Planner</p>
       </motion.div>
 

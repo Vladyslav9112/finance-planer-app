@@ -55,32 +55,35 @@ const WarehousePage: React.FC = () => {
     <div className="px-4 pt-6 pb-4 space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-800 text-white mb-3">Склад / ЗП / Тара</h1>
+        <h1 className="text-lg font-700 text-white mb-3">Склад / ЗП / Тара</h1>
         {/* Summary */}
         <div className="grid grid-cols-3 gap-2.5">
           <SummaryCard
             title="Зароблено"
             value={totalEarningsFromTara}
-            icon={<Package size={16} />}
+            icon={<Package size={14} />}
             isCurrency
             accentColor="violet"
             delay={0}
+            compact
           />
           <SummaryCard
-            title="Мають видати"
+            title="Видати"
             value={totalAmountOwedToMe}
-            icon={<Clock size={16} />}
+            icon={<Clock size={14} />}
             isCurrency
             accentColor="teal"
             delay={0.05}
+            compact
           />
           <SummaryCard
             title="Видано"
             value={totalPaidOut}
-            icon={<Banknote size={16} />}
+            icon={<Banknote size={14} />}
             isCurrency
             accentColor="lime"
             delay={0.1}
+            compact
           />
         </div>
       </div>

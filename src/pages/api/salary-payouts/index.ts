@@ -44,30 +44,31 @@ export default async function handler(req: any, res: any) {
         });
       }
 
-      // Transaction: create payout + income together
+      // Transaction: create payout first (avoids circular FK), then income, then link back
       const { payout, income } = await prisma.$transaction(async (tx: any) => {
+        // 1. Create payout without relatedIncomeId (Income FK to SalaryPayout must exist first)
+        const payout = await tx.salaryPayout.create({
+          data: { id, source, amount: numAmount, date, comment },
+        });
+        // 2. Create income referencing the now-existing payout
         const income = await tx.income.create({
           data: {
             id: incomeId,
             amount: numAmount,
             source,
+            // Записується автоматично як "Виплата ЗП" — коментар для ідентифікації
             comment: `Виплата ЗП: ${comment || source}`,
             date,
             type: "salary_payout",
             relatedSalaryPayoutId: id,
           },
         });
-        const payout = await tx.salaryPayout.create({
-          data: {
-            id,
-            source,
-            amount: numAmount,
-            date,
-            comment,
-            relatedIncomeId: incomeId,
-          },
+        // 3. Link payout back to income
+        const updatedPayout = await tx.salaryPayout.update({
+          where: { id },
+          data: { relatedIncomeId: incomeId },
         });
-        return { payout, income };
+        return { payout: updatedPayout, income };
       });
 
       return res.status(201).json({

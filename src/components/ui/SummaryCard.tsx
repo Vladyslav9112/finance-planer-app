@@ -15,6 +15,8 @@ interface SummaryCardProps {
   trend?: { value: number; label?: string };
   className?: string;
   delay?: number;
+  /** Smaller padding + font for tight grids (e.g. 3-column) */
+  compact?: boolean;
 }
 
 const accentStyles: Record<
@@ -57,6 +59,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
   trend,
   className,
   delay = 0,
+  compact = false,
 }) => {
   const styles = accentStyles[accentColor];
   const displayValue =
@@ -69,17 +72,19 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay }}
+      className="h-full"
     >
       <Tilt
         tiltMaxAngleX={6}
         tiltMaxAngleY={6}
         glareEnable={false}
         transitionSpeed={1000}
-        className="w-full"
+        className="w-full h-full"
       >
         <div
           className={cn(
-            "relative rounded-2xl border bg-white/[0.04] backdrop-blur-sm p-4 overflow-hidden select-none",
+            "relative rounded-2xl border bg-white/[0.04] backdrop-blur-sm overflow-hidden select-none h-full",
+            compact ? "p-3" : "p-4",
             styles.border,
             styles.glow,
             className,
@@ -99,12 +104,18 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
           />
           <div className="relative flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-white/45 uppercase tracking-wider mb-2">
+              <p
+                className={cn(
+                  "font-500 text-white/45 uppercase tracking-wider mb-1.5",
+                  compact ? "text-[9px]" : "text-[10px]",
+                )}
+              >
                 {title}
               </p>
               <p
                 className={cn(
-                  "text-xl font-800 leading-tight truncate",
+                  "font-700 leading-tight break-all",
+                  compact ? "text-sm" : "text-lg",
                   styles.valueColor,
                 )}
               >
