@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 
 function serializeRow(r: any) {
   return {
@@ -45,7 +45,7 @@ export default async function handler(req: any, res: any) {
       }
 
       // Transaction: create payout + income together
-      const { payout, income } = await prisma.$transaction(async (tx) => {
+      const { payout, income } = await prisma.$transaction(async (tx: any) => {
         const income = await tx.income.create({
           data: {
             id: incomeId,

@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 
 function serializeRecord(r: any) {
   return {
@@ -33,7 +33,7 @@ export default async function handler(req: any, res: any) {
         any
       >;
       // Replace entries: delete existing, create new
-      const record = await prisma.$transaction(async (tx) => {
+      const record = await prisma.$transaction(async (tx: any) => {
         await tx.taraEntry.deleteMany({ where: { earningsRecordId: id } });
         return tx.earningsRecord.update({
           where: { id },

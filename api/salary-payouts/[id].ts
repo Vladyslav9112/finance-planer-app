@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 
 function serializeRow(r: any) {
   return {
@@ -44,7 +44,7 @@ export default async function handler(req: any, res: any) {
         }
       }
 
-      const { payout, income } = await prisma.$transaction(async (tx) => {
+      const { payout, income } = await prisma.$transaction(async (tx: any) => {
         const payout = await tx.salaryPayout.update({
           where: { id },
           data: { source, amount: numAmount, date, comment },
@@ -72,7 +72,7 @@ export default async function handler(req: any, res: any) {
 
     if (req.method === "DELETE") {
       const existing = await prisma.salaryPayout.findUnique({ where: { id } });
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: any) => {
         // Delete linked income first (SetNull on FK, so we must delete explicitly)
         if (existing?.relatedIncomeId) {
           await tx.income.deleteMany({ where: { relatedSalaryPayoutId: id } });
