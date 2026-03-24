@@ -30,8 +30,11 @@
         box-sizing: border-box;
       }
       html {
-        /* --tg-app-height is set by JS in main.tsx. Falls back to 100dvh in browsers. */
-        height: var(--tg-app-height, 100dvh);
+        /*
+         * Use Telegram's native --tg-viewport-stable-height CSS variable
+         * (set automatically by telegram-web-app.js). Falls back to 100dvh.
+         */
+        height: var(--tg-viewport-stable-height, 100dvh);
       }
       html,
       body {

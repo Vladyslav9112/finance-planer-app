@@ -7,8 +7,11 @@
     font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* --tg-app-height is set by JS in main.tsx. Falls back to 100dvh in browsers. */
-    height: var(--tg-app-height, 100dvh);
+    /*
+     * Use Telegram's native --tg-viewport-stable-height (set automatically by
+     * telegram-web-app.js). Falls back to 100dvh in regular browsers.
+     */
+    height: var(--tg-viewport-stable-height, 100dvh);
   }
 
   body {

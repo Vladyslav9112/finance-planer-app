@@ -14,8 +14,7 @@ const App: React.FC = () => {
     <HashRouter>
       <div
         style={{
-          flex: 1,
-          minHeight: 0,
+          height: "100%",
           display: "flex",
           flexDirection: "column",
         }}

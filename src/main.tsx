@@ -10,19 +10,8 @@ const tg = window.Telegram?.WebApp;
 if (tg) {
   tg.ready();
   tg.expand();
-
-  // Set a CSS variable that the stylesheet uses for the app height.
-  // Prefer viewportStableHeight (doesn't bounce during scroll) over viewportHeight.
-  // Do NOT use window.innerHeight — it returns the full device height including
-  // system bars, which is larger than the Telegram WebView's actual visible area.
-  const setAppHeight = () => {
-    const h = tg.viewportStableHeight || tg.viewportHeight;
-    if (h > 0) {
-      document.documentElement.style.setProperty("--tg-app-height", `${h}px`);
-    }
-  };
-  setAppHeight();
-  tg.onEvent("viewportChanged", setAppHeight);
+  // Telegram SDK automatically sets --tg-viewport-stable-height and
+  // --tg-viewport-height CSS variables on :root, no manual JS needed.
 }
 
 // Verify bot token + channel in console on every load
