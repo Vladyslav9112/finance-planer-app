@@ -1,7 +1,7 @@
 import type { Plan } from "../types";
 
-const BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-const CHANNEL_ID = import.meta.env.VITE_TELEGRAM_CHANNEL_ID;
+const BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
+const CHANNEL_ID = process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_ID;
 
 const isTelegramConfigured = () =>
   Boolean(BOT_TOKEN && CHANNEL_ID && BOT_TOKEN !== "" && CHANNEL_ID !== "");
