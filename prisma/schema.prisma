@@ -95,7 +95,7 @@ model EarningsRecord {
 
 model TaraEntry {
   id               String         @id @default(uuid())
-  rate             Int            // 2 | 3 | 4 | 5 | 6 | 7
+  rate             Int            // 1 | 2 | 3 | 4 | 5 | 6 | 7
   quantity         Float
   amount           Float          // rate * quantity
   earningsRecordId String

@@ -1,6 +1,6 @@
 import type { TaraRate, IncomeType, PlanPriority, PlanStatus } from "../types";
 
-export const TARA_RATES: TaraRate[] = [2, 3, 4, 5, 6, 7];
+export const TARA_RATES: TaraRate[] = [1, 2, 3, 4, 5, 6, 7];
 
 export const EXPENSE_CATEGORIES = [
   "Їжа та продукти",

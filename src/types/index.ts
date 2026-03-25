@@ -50,7 +50,7 @@ export interface Expense {
 
 // ─── Warehouse / Tara / Salary ─────────────────────────────────────────────────
 
-export type TaraRate = 2 | 3 | 4 | 5 | 6 | 7;
+export type TaraRate = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface TaraEntry {
   rate: TaraRate;

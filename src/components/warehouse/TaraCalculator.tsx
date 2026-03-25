@@ -16,7 +16,15 @@ interface TaraCalculatorProps {
 
 type QuantityMap = Record<TaraRate, string>;
 
-const initialQty: QuantityMap = { 2: "", 3: "", 4: "", 5: "", 6: "", 7: "" };
+const initialQty: QuantityMap = {
+  1: "",
+  2: "",
+  3: "",
+  4: "",
+  5: "",
+  6: "",
+  7: "",
+};
 
 export const TaraCalculator: React.FC<TaraCalculatorProps> = ({ onSave }) => {
   const [quantities, setQuantities] = useState<QuantityMap>(initialQty);
