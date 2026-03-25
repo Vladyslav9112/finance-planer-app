@@ -22,12 +22,16 @@ function serializeRecord(r: any) {
 export default async function handler(req: any, res: any) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-telegram-id");
   if (req.method === "OPTIONS") return res.status(200).end();
+
+  const telegramId = req.headers["x-telegram-id"] as string | undefined;
+  if (!telegramId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     if (req.method === "GET") {
       const records = await prisma.earningsRecord.findMany({
+        where: { telegramId },
         include: { entries: true },
         orderBy: [{ date: "desc" }, { createdAt: "desc" }],
       });
@@ -42,6 +46,7 @@ export default async function handler(req: any, res: any) {
       const record = await prisma.earningsRecord.create({
         data: {
           id,
+          telegramId,
           date,
           totalAmount: Number(totalAmount),
           comment,

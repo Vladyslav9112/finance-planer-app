@@ -13,8 +13,11 @@ function serializeRow(r: any) {
 export default async function handler(req: any, res: any) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-telegram-id");
   if (req.method === "OPTIONS") return res.status(200).end();
+
+  const telegramId = req.headers["x-telegram-id"] as string | undefined;
+  if (!telegramId) return res.status(401).json({ error: "Unauthorized" });
 
   const { id } = req.query as { id: string };
 
@@ -23,15 +26,20 @@ export default async function handler(req: any, res: any) {
       const { source, amount, date, comment } = req.body as Record<string, any>;
       const numAmount = amount !== undefined ? Number(amount) : undefined;
 
-      const existing = await prisma.salaryPayout.findUnique({ where: { id } });
+      const existing = await prisma.salaryPayout.findFirst({
+        where: { id, telegramId },
+      });
       if (!existing) return res.status(404).json({ error: "Not found" });
 
       if (numAmount !== undefined && numAmount !== existing.amount) {
         const [earningsAgg, payoutsAgg] = await Promise.all([
-          prisma.earningsRecord.aggregate({ _sum: { totalAmount: true } }),
+          prisma.earningsRecord.aggregate({
+            where: { telegramId },
+            _sum: { totalAmount: true },
+          }),
           prisma.salaryPayout.aggregate({
+            where: { telegramId, id: { not: id } },
             _sum: { amount: true },
-            where: { id: { not: id } },
           }),
         ]);
         const totalEarned = earningsAgg._sum.totalAmount ?? 0;
@@ -70,7 +78,10 @@ export default async function handler(req: any, res: any) {
     }
 
     if (req.method === "DELETE") {
-      const existing = await prisma.salaryPayout.findUnique({ where: { id } });
+      const existing = await prisma.salaryPayout.findFirst({
+        where: { id, telegramId },
+      });
+      if (!existing) return res.status(204).end();
       await prisma.$transaction(async (tx: any) => {
         if (existing?.relatedIncomeId) {
           await tx.income.deleteMany({ where: { relatedSalaryPayoutId: id } });

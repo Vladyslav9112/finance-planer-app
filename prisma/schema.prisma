@@ -28,6 +28,7 @@ enum PlanPriority {
 
 model Plan {
   id          String       @id @default(uuid())
+  telegramId  String?
   title       String
   description String?
   date        String       // YYYY-MM-DD
@@ -54,6 +55,7 @@ enum IncomeType {
 
 model Income {
   id                   String      @id @default(uuid())
+  telegramId           String?
   amount               Float
   source               String
   comment              String?
@@ -69,6 +71,7 @@ model Income {
 
 model Expense {
   id        String   @id @default(uuid())
+  telegramId String?
   amount    Float
   category  String
   comment   String?
@@ -83,6 +86,7 @@ model Expense {
 
 model EarningsRecord {
   id          String       @id @default(uuid())
+  telegramId  String?
   date        String       // YYYY-MM-DD
   totalAmount Float
   comment     String?
@@ -106,6 +110,7 @@ model TaraEntry {
 
 model SalaryPayout {
   id              String   @id @default(uuid())
+  telegramId      String?
   source          String
   amount          Float
   date            String   // YYYY-MM-DD

@@ -13,12 +13,16 @@ function serialize(r: any) {
 export default async function handler(req: any, res: any) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-telegram-id");
   if (req.method === "OPTIONS") return res.status(200).end();
+
+  const telegramId = req.headers["x-telegram-id"] as string | undefined;
+  if (!telegramId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     if (req.method === "GET") {
       const incomes = await prisma.income.findMany({
+        where: { telegramId },
         orderBy: [{ date: "desc" }, { createdAt: "desc" }],
       });
       return res.status(200).json(incomes.map(serialize));
@@ -30,6 +34,7 @@ export default async function handler(req: any, res: any) {
       const income = await prisma.income.create({
         data: {
           id,
+          telegramId,
           amount: Number(amount),
           source,
           comment,

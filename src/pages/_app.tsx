@@ -7,6 +7,7 @@ import { useFinanceStore } from "../store/useFinanceStore";
 import { usePlanStore } from "../store/usePlanStore";
 import { useWarehouseStore } from "../store/useWarehouseStore";
 import { diagnoseTelegram } from "../services/telegramService";
+import { setTelegramId } from "../lib/apiClient";
 import "../index.css";
 
 function AppInitializer({ children }: { children: React.ReactNode }) {
@@ -18,6 +19,9 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
     if (tg) {
       tg.ready();
       tg.expand();
+      // Extract and store Telegram user ID for per-user data isolation
+      const userId = tg.initDataUnsafe?.user?.id;
+      if (userId) setTelegramId(String(userId));
     }
     diagnoseTelegram();
 

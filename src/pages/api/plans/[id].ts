@@ -13,8 +13,11 @@ function serialize(p: any) {
 export default async function handler(req: any, res: any) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-telegram-id");
   if (req.method === "OPTIONS") return res.status(200).end();
+
+  const telegramId = req.headers["x-telegram-id"] as string | undefined;
+  if (!telegramId) return res.status(401).json({ error: "Unauthorized" });
 
   const { id } = req.query as { id: string };
 
@@ -22,8 +25,8 @@ export default async function handler(req: any, res: any) {
     if (req.method === "PUT") {
       const { title, description, date, time, status, priority, category } =
         req.body as Record<string, string>;
-      const plan = await prisma.plan.update({
-        where: { id },
+      const plan = await prisma.plan.updateMany({
+        where: { id, telegramId },
         data: {
           title,
           description,
@@ -34,11 +37,13 @@ export default async function handler(req: any, res: any) {
           category,
         },
       });
-      return res.status(200).json(serialize(plan));
+      if (plan.count === 0) return res.status(404).json({ error: "Not found" });
+      const updated = await prisma.plan.findUnique({ where: { id } });
+      return res.status(200).json(serialize(updated));
     }
 
     if (req.method === "DELETE") {
-      await prisma.plan.delete({ where: { id } });
+      await prisma.plan.deleteMany({ where: { id, telegramId } });
       return res.status(204).end();
     }
 

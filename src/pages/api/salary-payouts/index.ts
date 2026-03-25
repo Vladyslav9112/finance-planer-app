@@ -13,26 +13,36 @@ function serializeRow(r: any) {
 export default async function handler(req: any, res: any) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-telegram-id");
   if (req.method === "OPTIONS") return res.status(200).end();
+
+  const telegramId = req.headers["x-telegram-id"] as string | undefined;
+  if (!telegramId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     if (req.method === "GET") {
       const payouts = await prisma.salaryPayout.findMany({
+        where: { telegramId },
         orderBy: [{ date: "desc" }, { createdAt: "desc" }],
       });
       return res.status(200).json(payouts.map(serializeRow));
     }
 
     if (req.method === "POST") {
-      // Validate: amount must not exceed owed amount (totalEarnings - totalPaidOut)
+      // Validate: amount must not exceed owed amount (totalEarnings - totalPaidOut) for this user
       const { id, source, amount, date, comment, incomeId } =
         req.body as Record<string, any>;
       const numAmount = Number(amount);
 
       const [earningsAgg, payoutsAgg] = await Promise.all([
-        prisma.earningsRecord.aggregate({ _sum: { totalAmount: true } }),
-        prisma.salaryPayout.aggregate({ _sum: { amount: true } }),
+        prisma.earningsRecord.aggregate({
+          where: { telegramId },
+          _sum: { totalAmount: true },
+        }),
+        prisma.salaryPayout.aggregate({
+          where: { telegramId },
+          _sum: { amount: true },
+        }),
       ]);
       const totalEarned = earningsAgg._sum.totalAmount ?? 0;
       const totalPaid = payoutsAgg._sum.amount ?? 0;
@@ -48,12 +58,13 @@ export default async function handler(req: any, res: any) {
       const { payout, income } = await prisma.$transaction(async (tx: any) => {
         // 1. Create payout without relatedIncomeId (Income FK to SalaryPayout must exist first)
         const payout = await tx.salaryPayout.create({
-          data: { id, source, amount: numAmount, date, comment },
+          data: { id, telegramId, source, amount: numAmount, date, comment },
         });
         // 2. Create income referencing the now-existing payout
         const income = await tx.income.create({
           data: {
             id: incomeId,
+            telegramId,
             amount: numAmount,
             source,
             // Записується автоматично як "Виплата ЗП" — коментар для ідентифікації

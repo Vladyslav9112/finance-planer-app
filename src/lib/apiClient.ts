@@ -8,10 +8,28 @@ import type {
 
 const BASE = "/api";
 
+// Set by _app.tsx after Telegram SDK init
+let _telegramId = "";
+export function setTelegramId(id: string) {
+  _telegramId = id;
+}
+export function getTelegramId() {
+  return _telegramId;
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (_telegramId) headers["x-telegram-id"] = _telegramId;
+
   const res = await fetch(`${BASE}${url}`, {
-    headers: { "Content-Type": "application/json" },
+    headers,
     ...options,
+    // merge caller headers with our defaults
+    ...(options?.headers
+      ? { headers: { ...headers, ...(options.headers as any) } }
+      : {}),
   });
   if (res.status === 204) return undefined as T;
   const json = await res.json();
