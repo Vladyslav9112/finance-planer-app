@@ -24,7 +24,9 @@
     background-color: #090910;
     color: #f8f8ff;
     height: 100%;
-    overflow: hidden;
+    overflow: auto;
+    /* Prevent zoom on iOS when focusing inputs */
+    touch-action: pan-y;
   }
 
   #root {
